@@ -1,0 +1,21 @@
+model_name: net-transofrmer
+model_params:
+  d_model: 64
+  max_seq_len: 64
+  n_dec_layers: 8
+  n_enc_layers: 8
+  n_head: 2
+  pos_dropout: 0.2
+  trans_dropout: 0.2
+  vocab_size: 877
+train_params:
+  batch_size: 64
+  checkpoint: 1
+  clip: 1.0
+  device: cpu
+  epochs: 3
+  loss: CrossEntropyLoss
+  lr: 0.005
+  optim: Adam
+  train_path: C:\Users\under\github\net-app\datasets\wd_korean_16.f12
+  val_path: C:\Users\under\github\net-app\datasets\wd_korean_16.f12

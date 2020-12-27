@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>Named Entity Transliterator</title>
+    </head>
+    <body>
+        Hey NET App, how to write
+        <form method="post">
+          <div class="form-group">
+          <input type="text" name="input_text" class="form-control"
+                 value="{{ request.form['input_text'] }}"></input>
+          </div>
+          In
+          <select name="language">
+              {% for lan in languages %}
+                  <option value="{{lan}}">{{lan}}</option>"
+              {% endfor %}
+          </select>
+          <div class="form-group">
+            <input type="submit" value="Submit">
+          </div>
+        </form>
+        {% if res is not none %}
+          <h1> {{ res["prediction"] }} </h1>
+        {% endif %}
+    </body>
+</html>

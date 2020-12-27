@@ -1,0 +1,20 @@
+model_name: net-transofrmer
+model_params:
+  d_model: 32
+  max_seq_len: 32
+  n_dec_layers: 8
+  n_enc_layers: 8
+  n_head: 2
+  pos_dropout: 0.2
+  trans_dropout: 0.2
+  vocab_size: 1317
+train_params:
+  checkpoint: 1
+  clip: 1.0
+  device: cpu
+  epochs: 3
+  loss: CrossEntropyLoss
+  lr: 0.005
+  optim: Adam
+  train_path: C:\Users\under\github\net-app\datasets\wd_chinese_16.f12
+  val_path: C:\Users\under\github\net-app\datasets\wd_chinese_16.f12

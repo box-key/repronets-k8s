@@ -1,0 +1,16 @@
+# cache
+__pycache__/
+
+
+# ipython
+.ipynb_checkpoints/
+*.ipynb
+
+
+# pytorch models and vocabulary
+model_store/*/*.pt
+model_store/*/*.json
+
+
+# data set
+datasets/
