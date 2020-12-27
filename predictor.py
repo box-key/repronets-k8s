@@ -37,7 +37,7 @@ class BentoNETransliterator(bento.BentoService):
             }
         # get prediction
         beam_size = 1
-        prediction = predictor(
+        prediction = predictor.predict(
             src_text=json_obj["data"]["input_text"],
             beam_size=beam_size,
             max_pred_len=json_obj["data"]["max_pred_len"],
