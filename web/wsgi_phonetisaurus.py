@@ -12,7 +12,7 @@ LANGUAGES = ["japanese", "korean", "chinese"]
 
 
 def get_output(language, input_text):
-    cmd = "phonetisaurus predict --model models/{}_ps_1/model.fst {}"
+    cmd = "phonetisaurus predict --model model_store/{}_ps_1/model.fst {}"
     res = subprocess.check_output([cmd.format(language, input_text)],
                                   shell=True)
     output = ''.join(res.decode('utf-8').split()[1:])
