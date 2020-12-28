@@ -2,7 +2,7 @@
 
 <p align="center">
  <a href='http://104.131.7.54/'>
-   <img src='docs/net_app.png' class='center' width='70%' height='70%'>
+   <img src='docs/net_app.PNG' class='center' width='50%' height='30%'>
  </a>
 </p>
 
