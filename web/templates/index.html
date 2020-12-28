@@ -2,14 +2,21 @@
     <head>
         <title>Named Entity Transliterator</title>
     </head>
+    <style>
+      .content {
+        width: 70%;
+        margin: 0 auto;
+      }
+    </style>
     <body>
-        Hey NET App, how to write
+      <div class="content">
+        Hey NET, how to write
         <form method="post">
           <div class="form-group">
           <input type="text" name="input_text" class="form-control"
                  value="{{ request.form['input_text'] }}"></input>
           </div>
-          In
+          in
           <select name="language">
               {% for lan in languages %}
                   <option value="{{lan}}">{{lan}}</option>"
@@ -22,5 +29,6 @@
         {% if res is not none %}
           <h1> {{ res["prediction"] }} </h1>
         {% endif %}
+      </div>
     </body>
 </html>
