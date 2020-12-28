@@ -25,21 +25,16 @@ def get_output(language, input_text, beam_size):
     res = subprocess.check_output([cmd.format(beam_size, language, input_text)],
                                   shell=True)
     output = []
-    for pred in res.decode('utf-8').split('\n'):
+    for pred in res.decode('utf-8').split('\n')[:-1]:
         output.append(''.join(pred.split()[1:]))
-    unique_predicitons = set(output)
-    return format_output(unique_predicitons)
+    return format_output(output)
 
 
-def format_output(unique_predicitons):
-    if len(unique_predicitons) == 0:
-        formatted_output = ""
-    elif len(unique_predicitons) == 1:
-        formatted_output = str(unique_predicitons)
-    elif len(unique_predicitons) == 2:
-        formatted_output = ' or '.join(unique_predicitons)
-    else:
-        formatted_output = ', '.join(unique_predicitons)
+def format_output(output):
+    formatted_output = {}
+    for i, pred in enumerate(output):
+        key = "No.{}".format(i + 1)
+        formatted_output[key] = pred
     return formatted_output
 
 
@@ -72,7 +67,7 @@ def index():
                                    beam_size=BEAM_SIZE,
                                    res=result)
         # format output
-        result["prediction"] = "It's {}".format(output)
+        result["prediction"] = output
         return render_template('index.html',
                                languages=LANGUAGES,
                                beam_size=BEAM_SIZE,

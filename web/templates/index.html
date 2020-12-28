@@ -28,7 +28,14 @@
         </div>
       </form>
       {% if res is not none %}
-        <h1> {{ res["prediction"] }} </h1>
+         <table>
+           {% for key, value in res["prediction"].items() %}
+             <tr>
+                <th> {{key}} </th>
+                <td> {{value}} </td>
+             </tr>
+           {% endfor %}
+        </table>
       {% endif %}
     </body>
 </html>
