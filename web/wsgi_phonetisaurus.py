@@ -22,7 +22,7 @@ def get_output(language, input_text):
 def index():
     if request.method == "POST":
         language = request.form.get("language")
-        input_text = request.form["input_text"]
+        input_text = request.form["input_text"].lower()
         result = {}
         # call phonetisaurus to get prediction
         if language == "japanese":
