@@ -12,10 +12,9 @@ LANGUAGES = ["japanese", "korean", "chinese"]
 
 
 def get_output(language, input_text):
-    res = subprocess.check_output(
-        [cmd.format("katakana", input_text)],
-        shell=True
-    )
+    cmd = "phonetisaurus predict --model models/{}_ps_1/model.fst {}"
+    res = subprocess.check_output([cmd.format(language, input_text)],
+                                  shell=True)
     output = ''.join(res.decode('utf-8').split()[1:])
     return output
 
@@ -26,7 +25,6 @@ def index():
         input_text = request.form["input_text"]
         result = {}
         # call phonetisaurus to get prediction
-        cmd = "phonetisaurus predict --model models/{}_ps_1/model.fst {}"
         if language == "japanese":
             output = get_output("katakana", input_text)
         elif language == "korean":
