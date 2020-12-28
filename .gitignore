@@ -14,3 +14,7 @@ model_store/*/*.json
 
 # data set
 datasets/
+
+
+# phonetisaurus models
+model_store/*_ps_*/

@@ -9,7 +9,14 @@ import re
 app = Flask(__name__)
 
 
-LANGUAGES = ["japanese", "korean", "chinese"]
+LANGUAGES = [
+    "japanese",
+    "korean",
+    "chinese",
+    "hebrew",
+    "arabic",
+    "russian"
+]
 
 
 def get_output(language, input_text):
@@ -25,7 +32,7 @@ def index():
         language = request.form.get("language")
         input_text = request.form["input_text"]
         # lower text and remove white space
-        input_text = re.sub(' ', '', input_text.lower())
+        input_text = input_text.lower().replace(" ", "")
         result = {}
         # call phonetisaurus to get prediction
         if language == "japanese":
@@ -34,6 +41,12 @@ def index():
             output = get_output("korean", input_text)
         elif language == "chinese":
             output = get_output("chinese", input_text)
+        elif language == "arabic":
+            output = get_output("arabic")
+        elif language == "hebrew":
+            output = get_output("hebrew")
+        elif language == "russian":
+            output = get_output("russian")
         else:
             result["prediction"] = "Bad input, try again"
             return render_template('index.html', languages=LANGUAGES, res=result)
