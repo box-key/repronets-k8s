@@ -33,13 +33,13 @@ def get_output(language, input_text, beam_size):
 
 def format_output(unique_predicitons):
     if len(unique_predicitons) == 0:
-        foramtted_output = ""
+        formatted_output = ""
     elif len(unique_predicitons) == 1:
-        foramtted_output = str(unique_predicitons)
+        formatted_output = str(unique_predicitons)
     elif len(unique_predicitons) == 2:
         formatted_output = ' or '.join(unique_predicitons)
     else:
-        foramtted_output = ', '.join(unique_predicitons)
+        formatted_output = ', '.join(unique_predicitons)
     return formatted_output
 
 
