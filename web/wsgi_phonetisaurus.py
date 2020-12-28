@@ -42,11 +42,11 @@ def index():
         elif language == "chinese":
             output = get_output("chinese", input_text)
         elif language == "arabic":
-            output = get_output("arabic")
+            output = get_output("arabic", input_text)
         elif language == "hebrew":
-            output = get_output("hebrew")
+            output = get_output("hebrew", input_text)
         elif language == "russian":
-            output = get_output("russian")
+            output = get_output("russian", input_text)
         else:
             result["prediction"] = "Bad input, try again"
             return render_template('index.html', languages=LANGUAGES, res=result)
