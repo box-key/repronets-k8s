@@ -15,12 +15,14 @@
                 <option value="{{lan}}">{{lan}}</option>"
             {% endfor %}
         </select>
-        Number of candidates
+        <br>
+        Number of predictions
         <select name="beam_size">
             {% for size in beam_size %}
                 <option value="{{size}}">{{size}}</option>"
             {% endfor %}
         </select>
+        <br>
         <div class="form-group">
           <input type="submit" value="Submit">
         </div>

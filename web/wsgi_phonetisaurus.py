@@ -25,8 +25,8 @@ def get_output(language, input_text, beam_size):
     res = subprocess.check_output([cmd.format(beam_size, language, input_text)],
                                   shell=True)
     output = []
-    for pred in res.split('\n'):
-        output.append(''.join(res.decode('utf-8').split()[1:]))
+    for pred in res.decode('utf-8').split('\n'):
+        output.append(''.join(pred.split()[1:]))
     unique_predicitons = set(output)
     return format_output(unique_predicitons)
 
