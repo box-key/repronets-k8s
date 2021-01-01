@@ -6,7 +6,7 @@ from data.vectorizer import NETVectorizer
 from modules.net_transformer import NETTransformer
 from modules.test import Encoder, Decoder, Seq2Seq
 
-from trainer import NETTrainer
+from modules.trainer import NETTrainer
 
 from torch.utils.data import RandomSampler
 import torch.nn as nn
