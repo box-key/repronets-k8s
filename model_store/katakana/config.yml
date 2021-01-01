@@ -1,21 +1,23 @@
 model_name: net-transofrmer
 model_params:
-  d_model: 64
+  dropout: 0.2
+  hid_dim: 256
+  input_dim: 246
   max_seq_len: 64
-  n_dec_layers: 8
-  n_enc_layers: 8
-  n_head: 2
-  pos_dropout: 0.2
-  trans_dropout: 0.2
-  vocab_size: 200
+  n_heads: 2
+  n_layers: 8
+  output_dim: 246
+  pf_dim: 64
+  src_pad_idx: 0
+  trg_pad_idx: 0
 train_params:
-  batch_size: 64
+  batch_size: 4
   checkpoint: 1
   clip: 1.0
-  device: cpu
+  device_type: cpu
   epochs: 3
   loss: CrossEntropyLoss
   lr: 0.005
   optim: Adam
-  train_path: C:\Users\under\github\net-app\datasets\wd_katakana_16.f12
+  train_path: C:\Users\under\github\net-app\datasets\wd_katakana_64.f12
   val_path: C:\Users\under\github\net-app\datasets\wd_katakana_16.f12

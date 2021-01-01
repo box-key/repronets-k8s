@@ -7,16 +7,15 @@ from tqdm import tqdm
 import os
 import logging
 
-from . import utils
+from .modules import utils
 
 
 logger = logging.getLogger(__name__)
 
 
 def _default_init_weights(model):
-    for name, param in model.named_parameters():
-        torch.nn.init.normal_(param.data, mean=0, std=0.01)
-
+    if hasattr(model, 'weight') and model.weight.dim() > 1:
+        nn.init.xavier_uniform_(model.weight.data)
 
 class NETTrainer:
 
@@ -72,45 +71,19 @@ class NETTrainer:
         return epoch_loss / len(iterator)
 
     def get_loss(self, batch):
-        src_padded = batch[0].to(self.device)
-        ## src_padded = [src_len, batch_size]
-        src_pad_mask = batch[1].to(self.device)
-        ## src_pad_mask = [batch_size, src_len]
-        trg_padded = batch[2].to(self.device)
-        ## trg_padded = [trg_len, batch_size]
-        trg_pad_mask = batch[3].to(self.device)
-        ## trg_pad_mask = [batch_size, trg_len]
-        memory_key_padding_mask = batch[4].to(self.device)
-        ## memory_key_padding_mask = [trg_len, src_len]
-        trg_mask = batch[5].to(self.device)
-        ## trg_mask = [trg_len, trg_len]
-        output = self.model(
-            src_seq=src_padded,
-            trg_seq=trg_padded,
-            src_key_padding_mask=src_pad_mask,
-            trg_key_padding_mask=trg_pad_mask,
-            memory_key_padding_mask=memory_key_padding_mask,
-            trg_mask=trg_mask
-        )
-        ## output = [batch_size, trg_len, vocab_size]
-        output = output.permute(1, 0, 2)
-        # utils.print_shape(output=output, trg_out=trg_padded[1:, :])
-        ## output = [trg_len, batch_size, vocab_size]
-        trg_out = trg_padded[1:, :]
-        output = output[1:, :, :]
-        # utils.print_shape(output=output, trg_out=trg_out)
-        # trg_out = trg_padded
-        ## trg_out = [trg_len, batch_size]
-        # print(output[0, :])
-        # print("con:\n{}".format(output.contiguous()))
-        output = output.contiguous().view(-1, output.shape[2])
-        trg_out = trg_out.contiguous().view(-1)
-        ## output = [batch_size * trg_len, output_dim]
-        ## trg_out = [batch_size * trg_len]
-        # utils.print_shape(trg_out=trg_out, output=output)
-        # print("conout:\n{}".format(output))
-        # print(output
-        return self.loss_fn(output, trg_out)
+        src_padded = batch['src_padded'].permute(1, 0)
+        ## src_padded = [batch_size, src_len]
+        trg_padded = batch['trg_padded'].permute(1, 0)
+        ## trg_padded = [batch_size, trg_len]
+        output, _ = self.model(src=src_padded, trg=trg_padded[:, :-1])
+        ## output = [batch_size, trg_len - 1, vocab_size]
+        output_dim = output.shape[2]
+        output = output.contiguous().view(-1, output_dim)
+        ## output = [batch size * trg len - 1, output dim]
+        trg_padded = trg_padded[:, 1:].contiguous().view(-1)
+        # trg = [batch size * trg len - 1]
+        # utils.print_shape(trg_padded=trg_padded, output=output)
+        return self.loss_fn(output, trg_padded)
 
     def epoch(self, n_epochs, clip, model_dir, checkpoint):
         best_loss = float("inf")

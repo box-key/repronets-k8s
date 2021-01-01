@@ -2,11 +2,11 @@ import bentoml as bento
 from bentoml.service.artifacts.common import PickleArtifact
 from bentoml.adapters import JsonInput, JsonOutput
 
-from models.inference.factory import NETModelFactory
-from models.inference.transliterator import NETransliterator
-from models.data.vectorizer import NETVectorizer
-from models.data.lookup import SymLookup
-from models.modules.net_transformer import NETTransformer
+from models.transformer.inference.factory import NETModelFactory
+from models.transformer.inference.transliterator import NETransliterator
+from models.transformer.data.vectorizer import NETVectorizer
+from models.transformer.data.lookup import SymLookup
+from models.transformer.modules.net_transformer import NETTransformer
 
 import torch
 import logging

@@ -27,7 +27,10 @@ class NETModelFactory:
 
     def produce(self, model_path, eval=True):
         model = self.model_class(**self.config["model_params"])
-        model.load_state_dict(torch.load(model_path))
+        if self.config['train_params']['device_type'] == 'cpu':
+            model.load_state_dict(torch.load(model_path, map_location=self.device))
+        else:
+            model.load_state_dict(torch.load(model_path))
         model.to(self.device)
         if eval:
             model.eval()

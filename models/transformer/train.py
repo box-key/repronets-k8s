@@ -4,7 +4,9 @@ from data.lookup import SymLookup
 from data.vectorizer import NETVectorizer
 
 from modules.net_transformer import NETTransformer
-from modules.trainer import NETTrainer
+from modules.test import Encoder, Decoder, Seq2Seq
+
+from trainer import NETTrainer
 
 from torch.utils.data import RandomSampler
 import torch.nn as nn
@@ -42,9 +44,10 @@ def save_config(output_path, model_name, model_params, train_params):
 @click.option("--trg-separator", type=click.STRING, default=" ", required=True)
 @click.option("--learning-rate", type=click.FLOAT, default=0.005)
 @click.option("--dropout", type=click.FLOAT, default=0.2)
-@click.option("--num-head", type=click.INT, default=8)
+@click.option("--n-heads", type=click.INT, default=8)
 @click.option("--num-workers", type=click.INT, default=4)
 @click.option("--max-seq-len", type=click.INT, default=64)
+@click.option("--hid-dim", type=click.INT, default=256)
 @click.option("--n-layers", type=click.INT, default=8)
 @click.option("--epochs", type=click.INT, default=10)
 @click.option("--checkpoint", type=click.INT, default=4)
@@ -126,18 +129,21 @@ def train(**kwargs):
         logger.info("Validation set size = {}".format(len(val_set)))
         # init model
         device = torch.device(kwargs["device"])
-        model = NETTransformer(
-            d_model=kwargs["max_seq_len"],
-            vocab_size=len(lookup),
-            max_seq_len=kwargs["max_seq_len"],
-            n_head=kwargs["num_head"],
-            n_enc_layers=kwargs["n_layers"],
-            n_dec_layers=kwargs["n_layers"],
-            trans_dropout=kwargs["dropout"],
-            pos_dropout=kwargs["dropout"]
-        ).to(device)
+        PAD_IDX = lookup.stoi[lookup.pad_token]
+        model_params = {
+            "input_dim": len(lookup),
+            "output_dim": len(lookup),
+            "hid_dim": kwargs['hid_dim'],
+            "n_layers": kwargs['n_layers'],
+            "n_heads": kwargs['n_heads'],
+            "pf_dim": kwargs['max_seq_len'],
+            "dropout": kwargs['dropout'],
+            "max_seq_len": kwargs['max_seq_len'],
+            "src_pad_idx": PAD_IDX,
+            "trg_pad_idx": PAD_IDX,
+        }
+        model = Seq2Seq(**model_params, device=device).to(device)
         # init trainer
-        pad_idx = lookup.stoi[lookup.pad_token]
         trainer = NETTrainer(
             model=model,
             train_iter=train_iter,
@@ -146,20 +152,10 @@ def train(**kwargs):
             learning_rate=kwargs["learning_rate"],
             device=device,
             train_sampler=train_sampler,
-            loss_fn=nn.CrossEntropyLoss(ignore_index=pad_idx)
+            loss_fn=nn.CrossEntropyLoss(ignore_index=PAD_IDX)
         )
         # save dependency files before training
         lookup.save(kwargs["model_dir"] / "vocab.json")
-        model_params = {
-            "d_model": kwargs["max_seq_len"],
-            "vocab_size": len(lookup),
-            "max_seq_len": kwargs["max_seq_len"],
-            "n_head": kwargs["num_head"],
-            "n_enc_layers": kwargs["n_layers"],
-            "n_dec_layers": kwargs["n_layers"],
-            "trans_dropout": kwargs["dropout"],
-            "pos_dropout": kwargs["dropout"]
-        }
         train_params = {
             "epochs": kwargs["epochs"],
             "lr": kwargs["learning_rate"],
@@ -167,7 +163,7 @@ def train(**kwargs):
             "batch_size": kwargs["batch_size"],
             "train_path": str(kwargs["train_path"].absolute()),
             "val_path": str(kwargs["val_path"].absolute()),
-            "device": kwargs["device"],
+            "device_type": kwargs["device"],
             "checkpoint": kwargs["checkpoint"],
             "optim": "Adam",
             "loss": "CrossEntropyLoss"
