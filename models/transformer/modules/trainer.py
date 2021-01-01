@@ -7,7 +7,7 @@ from tqdm import tqdm
 import os
 import logging
 
-from .modules import utils
+from . import utils
 
 
 logger = logging.getLogger(__name__)
