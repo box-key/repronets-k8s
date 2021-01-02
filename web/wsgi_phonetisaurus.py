@@ -44,6 +44,11 @@ def index():
         language = request.form.get("language")
         beam_size = request.form.get("beam_size")
         input_text = request.form["input_text"]
+        if len(input_text) == 0:
+            render_template('index.html',
+                            languages=LANGUAGES,
+                            beam_size=BEAM_SIZE,
+                            res=None)
         # lower text and remove white space
         input_text = input_text.lower().replace(" ", "")
         result = {}

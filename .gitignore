@@ -23,3 +23,7 @@ model_store/*_ps_*/
 
 # virtual env
 venv/
+
+
+# socket
+*.sock
