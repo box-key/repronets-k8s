@@ -11,15 +11,15 @@
         </div>
         in
         <select name="language">
-            {% for lan in languages %}
-                <option value="{{lan}}">{{lan}}</option>"
-            {% endfor %}
+          {% for lan in languages %}
+            <option value="{{lan}}" {% if lan==selected_lan %} selected="selected" {% endif %}>{{lan}}</option>
+          {% endfor %}
         </select>
         <br>
         Number of predictions
         <select name="beam_size">
-            {% for size in beam_size %}
-                <option value="{{size}}">{{size}}</option>"
+            {% for bsize in beam_size %}
+                <option value="{{bsize}}" {% if bsize==selected_bsize %} selected="selected" {% endif %}>{{bsize}}</option>
             {% endfor %}
         </select>
         <br>

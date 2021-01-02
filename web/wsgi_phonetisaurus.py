@@ -17,7 +17,9 @@ LANGUAGES = [
     "arabic",
     "russian"
 ]
+DEFAULT_LAN = "japanese"
 BEAM_SIZE = [1, 2, 3, 4, 5]
+DEFAULT_BSIZE = 1
 
 
 def get_output(language, input_text, beam_size):
@@ -42,12 +44,14 @@ def format_output(output):
 def index():
     if request.method == "POST":
         language = request.form.get("language")
-        beam_size = request.form.get("beam_size")
+        beam_size = int(request.form.get("beam_size"))
         input_text = request.form["input_text"]
         if len(input_text) == 0:
             return render_template('index.html',
                                     languages=LANGUAGES,
                                     beam_size=BEAM_SIZE,
+                                    selected_lan=DEFAULT_LAN,
+                                    selected_bsize=DEFAULT_BSIZE,
                                     res=None)
         # lower text and remove white space
         input_text = input_text.lower().replace(" ", "")
@@ -70,14 +74,20 @@ def index():
             return render_template('index.html',
                                    languages=LANGUAGES,
                                    beam_size=BEAM_SIZE,
+                                   selected_lan=language,
+                                   selected_bsize=beam_size,
                                    res=result)
         # format output
         result["prediction"] = output
         return render_template('index.html',
                                languages=LANGUAGES,
                                beam_size=BEAM_SIZE,
+                               selected_lan=language,
+                               selected_bsize=beam_size,
                                res=result)
     return render_template('index.html',
                            languages=LANGUAGES,
                            beam_size=BEAM_SIZE,
+                           selected_lan=DEFAULT_LAN,
+                           selected_bsize=DEFAULT_BSIZE,
                            res=None)
