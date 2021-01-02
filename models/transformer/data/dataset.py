@@ -22,8 +22,9 @@ class NETDataset(Dataset):
             for line in f:
                 if line:
                     items = line.split()
-                    source = list(items[0].strip())
+                    source = list(items[0].strip().lower())
                     target = " ".join(items[1:]).strip().split(trg_separator)
+                    print(source, target)
                     source_ints = vectorizer.vectorize(
                         sos_list + source + eos_list
                     )
@@ -33,4 +34,5 @@ class NETDataset(Dataset):
                     net_pairs.append(
                         {"source": source_ints, "target": target_ints}
                     )
+                    print(source_ints, target_ints)
         return cls(net_pairs=net_pairs, vectorizer=vectorizer)

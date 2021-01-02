@@ -12,7 +12,7 @@ class NETVectorizer:
         return torch.tensor(arr, dtype=torch.long)
 
     def textualize(self, id_list, no_special_tokens):
-        symbols = [self.lookup.itos[idx] for idx in id_list]
+        symbols = [self.lookup.itos[str(idx)] for idx in id_list]
         if no_special_tokens:
             symbols = [x for x in symbols if x not in self.special_tokens]
         return ''.join(symbols)

@@ -10,6 +10,7 @@ __pycache__/
 # pytorch models and vocabulary
 model_store/*/*.pt
 model_store/*/*.json
+model_store/*/*.zip
 
 
 # data set
