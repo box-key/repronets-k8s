@@ -5,3 +5,4 @@ pyyaml==5.1
 bentoml==0.10.1
 gunicorn==20.0.4
 flask==1.1.2
+phonetisaurus==0.3.0
