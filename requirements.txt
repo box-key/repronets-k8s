@@ -2,6 +2,6 @@
 tqdm==4.48.2
 click==7.1.2
 pyyaml==5.1
-bentoml==0.10.2
+bentoml==0.10.1
 gunicorn==20.0.4
 flask==1.1.2
