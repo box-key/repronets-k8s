@@ -19,3 +19,7 @@ datasets/
 
 # phonetisaurus models
 model_store/*_ps_*/
+
+
+# virtual env
+venv/
