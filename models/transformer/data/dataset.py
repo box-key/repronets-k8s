@@ -3,9 +3,8 @@ from torch.utils.data import Dataset
 
 class NETDataset(Dataset):
 
-    def __init__(self, net_pairs, vectorizer):
+    def __init__(self, net_pairs):
         self.net_pairs = net_pairs
-        self.vectorizer = vectorizer
 
     def __len__(self):
         return len(self.net_pairs)
@@ -14,7 +13,7 @@ class NETDataset(Dataset):
         return self.net_pairs[idx]
 
     @classmethod
-    def load(cls, data_path, vectorizer, trg_separator):
+    def load(cls, data_path, src_vectorizer, trg_vectorizer, trg_separator):
         net_pairs = []
         sos_list = [vectorizer.lookup.sos_token]
         eos_list = [vectorizer.lookup.eos_token]
@@ -24,15 +23,15 @@ class NETDataset(Dataset):
                     items = line.split()
                     source = list(items[0].strip().lower())
                     target = " ".join(items[1:]).strip().split(trg_separator)
-                    print(source, target)
-                    source_ints = vectorizer.vectorize(
+                    # print(source, target)
+                    source_ints = src_vectorizer.vectorize(
                         sos_list + source + eos_list
                     )
-                    target_ints = vectorizer.vectorize(
+                    target_ints = trg_vectorizer.vectorize(
                         sos_list + target + eos_list
                     )
                     net_pairs.append(
                         {"source": source_ints, "target": target_ints}
                     )
-                    print(source_ints, target_ints)
-        return cls(net_pairs=net_pairs, vectorizer=vectorizer)
+                    # print(source_ints, target_ints)
+        return cls(net_pairs=net_pairs)

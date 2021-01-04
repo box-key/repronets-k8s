@@ -104,35 +104,39 @@ def train(**kwargs):
             abort=True
         )
     if kwargs["train_path"].exists() and kwargs["val_path"].exists():
-        lookup = SymLookup.build(kwargs["train_path"])
-        logger.info("Build vocab with {} elements".format(len(lookup)))
-        vectorizer = NETVectorizer(lookup)
+        src_lookup, trg_lookup = SymLookup.build(kwargs["train_path"])
+        logger.info("Build src vocab with {} elements".format(len(src_lookup)))
+        logger.info("Build trg vocab with {} elements".format(len(trg_lookup)))
+        src_vectorizer = NETVectorizer(src_lookup)
+        trg_vectorizer = NETVectorizer(trg_lookup)
+        PAD_IDX = lookup.stoi[lookup.pad_token]
         # create train loader
         train_set = NETDataset.load(kwargs["train_path"],
-                                    vectorizer,
+                                    src_vectorizer,
+                                    trg_vectorizer,
                                     kwargs["trg_separator"])
         train_sampler, train_iter = get_loader(train_set,
                                                kwargs["batch_size"],
                                                1,
-                                               lookup.stoi[lookup.pad_token])
+                                               PAD_IDX)
                                                # kwargs["num_workers"])
         logger.info("Trainig set size = {}".format(len(train_set)))
         # create val loader
         val_set = NETDataset.load(kwargs["val_path"],
-                                  vectorizer,
+                                  src_vectorizer,
+                                  trg_vectorizer,
                                   kwargs["trg_separator"])
         val_sampler, val_iter = get_loader(val_set,
                                            kwargs["batch_size"],
                                            1,
-                                           lookup.stoi[lookup.pad_token])
+                                           PAD_IDX)
                                            # kwargs["num_workers"])
         logger.info("Validation set size = {}".format(len(val_set)))
         # init model
         device = torch.device(kwargs["device"])
-        PAD_IDX = lookup.stoi[lookup.pad_token]
         model_params = {
-            "input_dim": len(lookup),
-            "output_dim": len(lookup),
+            "input_dim": len(src_lookup),
+            "output_dim": len(trg_lookup),
             "hid_dim": kwargs['hid_dim'],
             "n_layers": kwargs['n_layers'],
             "n_heads": kwargs['n_heads'],
@@ -155,7 +159,8 @@ def train(**kwargs):
             loss_fn=nn.CrossEntropyLoss(ignore_index=PAD_IDX)
         )
         # save dependency files before training
-        lookup.save(kwargs["model_dir"] / "vocab.json")
+        src_lookup.save(kwargs["model_dir"] / "src_vocab.json")
+        trg_lookup.save(kwargs["model_dir"] / "trg_vocab.json")
         train_params = {
             "epochs": kwargs["epochs"],
             "lr": kwargs["learning_rate"],

@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 class SymLookup:
 
-    pad_token = '<<pad>>'
-    eos_token = '<<eos>>'
-    sos_token = '<<sos>>'
+    pad_token = '<pad>'
+    eos_token = '<eos>'
+    sos_token = '<sos>'
 
     def __init__(self, stoi, itos):
         self.stoi = stoi
@@ -38,19 +38,26 @@ class SymLookup:
     @classmethod
     def build(cls, data_path):
         logger.debug("Building vocabulary")
-        vocab = {}
+        src_vocab, trg_vocab = {}, {}
         # read data file
         with open(data_path, "r", encoding='utf-8') as f:
             for line in f:
                 items = line.strip().split()
-                vocab.update({char:1 for char in list(items[0])})
-                vocab.update({phoneme:1 for phoneme in items[1:]})
-            vocab_list = [cls.pad_token, cls.eos_token, cls.sos_token]
-            for key in sorted(vocab.keys()):
-                vocab_list.append(key)
-        # build itos and stoi
-        itos = {}
-        itos.update(enumerate(vocab_list))
-        stoi = dict((v, k) for k, v in itos.items())
+                src_vocab.update({char:1 for char in list(items[0])})
+                trg_vocab.update({phoneme:1 for phoneme in items[1:]})
+            src_vocab_list = [cls.pad_token, cls.eos_token, cls.sos_token]
+            trg_vocab_list = [cls.pad_token, cls.eos_token, cls.sos_token]
+            for key in sorted(src_vocab.keys()):
+                src_vocab_list.append(key)
+            for key in sorted(trg_vocab.keys()):
+                trg_vocab_list.append(key)
+        # build itos and stoi for src
+        src_itos = {}
+        src_itos.update(enumerate(src_vocab_list))
+        src_stoi = dict((v, k) for k, v in src_itos.items())
+        # build itos and stoi for trg
+        trg_itos = {}
+        trg_itos.update(enumerate(trg_vocab_list))
+        trg_stoi = dict((v, k) for k, v in trg_itos.items())
         logger.debug("Lookup size = {}".format(len(stoi)))
-        return cls(stoi=stoi, itos=itos)
+        return cls(src_stoi, src_itos), cls(trg_stoi, trg_itos)
