@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 def _default_init_weights(model):
-    if hasattr(model, 'weight') and model.weight.dim() > 1:
-        nn.init.xavier_uniform_(model.weight.data)
+    for name, param in model.named_parameters():
+        torch.nn.init.normal_(param.data, mean=0, std=0.01)
+
 
 class NETTrainer:
 
