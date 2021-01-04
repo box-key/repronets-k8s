@@ -109,7 +109,8 @@ def train(**kwargs):
         logger.info("Build trg vocab with {} elements".format(len(trg_lookup)))
         src_vectorizer = NETVectorizer(src_lookup)
         trg_vectorizer = NETVectorizer(trg_lookup)
-        PAD_IDX = lookup.stoi[lookup.pad_token]
+        PAD_IDX = src_lookup.stoi[src_lookup.pad_token]
+        logger.debug("Pad value = '{}'".format(PAD_IDX))
         # create train loader
         train_set = NETDataset.load(kwargs["train_path"],
                                     src_vectorizer,

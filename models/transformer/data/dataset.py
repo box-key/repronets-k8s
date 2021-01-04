@@ -1,5 +1,7 @@
 from torch.utils.data import Dataset
 
+from .lookup import SymLookup
+
 
 class NETDataset(Dataset):
 
@@ -15,8 +17,8 @@ class NETDataset(Dataset):
     @classmethod
     def load(cls, data_path, src_vectorizer, trg_vectorizer, trg_separator):
         net_pairs = []
-        sos_list = [vectorizer.lookup.sos_token]
-        eos_list = [vectorizer.lookup.eos_token]
+        sos_list = [SymLookup.sos_token]
+        eos_list = [SymLookup.eos_token]
         with open(data_path, mode="r", encoding='utf-8') as f:
             for line in f:
                 if line:

@@ -59,5 +59,4 @@ class SymLookup:
         trg_itos = {}
         trg_itos.update(enumerate(trg_vocab_list))
         trg_stoi = dict((v, k) for k, v in trg_itos.items())
-        logger.debug("Lookup size = {}".format(len(stoi)))
         return cls(src_stoi, src_itos), cls(trg_stoi, trg_itos)
