@@ -13,8 +13,6 @@ class NETModelFactory:
         src_field_path,
         trg_field_path,
         model_class,
-        lookup_loader,
-        include_device_in_model,
         device
     ):
         self.model_class = model_class
@@ -22,7 +20,6 @@ class NETModelFactory:
         self.src_field = self._load_field(src_field_path)
         self.trg_field = self._load_field(trg_field_path)
         self.device = device
-        self.include_device_in_model = include_device_in_model
 
     def _load_config(self, config_path):
         with open(config_path) as yml_file:
@@ -35,12 +32,12 @@ class NETModelFactory:
         return field
 
     def produce(self, model_path, eval=True):
-        if self.include_device_in_model:
-            model = self.model_class(**self.config["model_params"], device=self.device)
-        else:
-            model = self.model_class(**self.config["model_params"])
+        model = self.model_class(**self.config["model_params"],
+                                 device=self.device)
         if self.config['train_params']['device_type'] != 'cpu':
-            model.load_state_dict(torch.load(model_path, map_location=self.device))
+            model.load_state_dict(
+                torch.load(model_path, map_location=self.device)
+            )
         else:
             model.load_state_dict(torch.load(model_path))
         model.to(self.device)
