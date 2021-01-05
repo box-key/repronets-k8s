@@ -1,14 +1,10 @@
-from data.dataset import NETDataset
-from data.loader import NETDataLoader
-from data.lookup import SymLookup
-from data.vectorizer import NETVectorizer
-
-from modules.net_transformer import NETTransformer
-from modules.test import Encoder, Decoder, Seq2Seq
-
+from modules.seq2seq import Seq2Seq
 from modules.trainer import NETTrainer
 
-from torch.utils.data import RandomSampler
+from data.dataset import TorchtextNETDataset
+
+from torchtext import data
+
 import torch.nn as nn
 import torch
 
@@ -17,16 +13,7 @@ import click
 import os
 import logging
 import yaml
-
-
-def get_loader(dataset, batch_size, num_workers, pad_value):
-    sampler = RandomSampler(dataset)
-    iter = NETDataLoader.generate(dataset=dataset,
-                                  batch_size=batch_size,
-                                  sampler=sampler,
-                                  pad_value=pad_value,
-                                  num_workers=num_workers)
-    return sampler, iter
+import dill
 
 
 def save_config(output_path, model_name, model_params, train_params):
@@ -42,7 +29,7 @@ def save_config(output_path, model_name, model_params, train_params):
 @click.command()
 @click.option("--batch-size", type=click.INT, default=64)
 @click.option("--trg-separator", type=click.STRING, default=" ", required=True)
-@click.option("--learning-rate", type=click.FLOAT, default=0.005)
+@click.option("--learning-rate", type=click.FLOAT, default=0.0005)
 @click.option("--dropout", type=click.FLOAT, default=0.2)
 @click.option("--n-heads", type=click.INT, default=8)
 @click.option("--num-workers", type=click.INT, default=4)
@@ -104,50 +91,45 @@ def train(**kwargs):
             abort=True
         )
     if kwargs["train_path"].exists() and kwargs["val_path"].exists():
-        src_lookup, trg_lookup = SymLookup.build(kwargs["train_path"])
-        logger.info("Build src vocab with {} elements".format(len(src_lookup)))
-        logger.info("Build trg vocab with {} elements".format(len(trg_lookup)))
-        src_vectorizer = NETVectorizer(src_lookup)
-        trg_vectorizer = NETVectorizer(trg_lookup)
-        PAD_IDX = src_lookup.stoi[src_lookup.pad_token]
-        logger.debug("Pad value = '{}'".format(PAD_IDX))
-        # create train loader
-        train_set = NETDataset.load(kwargs["train_path"],
-                                    src_vectorizer,
-                                    trg_vectorizer,
-                                    kwargs["trg_separator"])
-        train_sampler, train_iter = get_loader(train_set,
-                                               kwargs["batch_size"],
-                                               1,
-                                               PAD_IDX)
-                                               # kwargs["num_workers"])
-        logger.info("Trainig set size = {}".format(len(train_set)))
-        # create val loader
-        val_set = NETDataset.load(kwargs["val_path"],
-                                  src_vectorizer,
-                                  trg_vectorizer,
-                                  kwargs["trg_separator"])
-        val_sampler, val_iter = get_loader(val_set,
-                                           kwargs["batch_size"],
-                                           1,
-                                           PAD_IDX)
-                                           # kwargs["num_workers"])
-        logger.info("Validation set size = {}".format(len(val_set)))
+        # load dataset
+        src_field = data.Field(eos_token='<eos>', sequential=True)
+        trg_field = data.Field(eos_token='<eos>', sequential=True)
+        train_data, val_data = TorchtextNETDataset.loads(kwargs["train_path"],
+                                                         kwargs["val_path"],
+                                                         src_field,
+                                                         trg_field)
+        src_field.build_vocab(train_data, val_data)
+        trg_field.build_vocab(train_data, val_data)
+        logger.info("Source vocab size = {}".format(len(src_field.vocab)))
+        logger.info("Target vocab size = {}".format(len(trg_field.vocab)))
+        logger.info("Trainig set size = {}".format(len(train_data)))
+        logger.info("Validation set size = {}".format(len(val_data)))
+        # make iterator
+        device = torch.device(kwargs['device'])
+        train_iter = data.BucketIterator(train_data,
+                                         batch_size=kwargs["batch_size"],
+                                         repeat=False,
+                                         train=True,
+                                         device=device)
+        val_iter = data.BucketIterator(val_data,
+                                       batch_size=kwargs["batch_size"],
+                                       train=False,
+                                       device=device)
         # init model
-        device = torch.device(kwargs["device"])
         model_params = {
-            "input_dim": len(src_lookup),
-            "output_dim": len(trg_lookup),
+            "input_dim": len(src_field.vocab),
+            "output_dim": len(trg_field.vocab),
             "hid_dim": kwargs['hid_dim'],
             "n_layers": kwargs['n_layers'],
             "n_heads": kwargs['n_heads'],
             "pf_dim": kwargs['max_seq_len'],
             "dropout": kwargs['dropout'],
             "max_seq_len": kwargs['max_seq_len'],
-            "src_pad_idx": PAD_IDX,
-            "trg_pad_idx": PAD_IDX,
+            "src_pad_idx": src_field.vocab.stoi[src_field.pad_token],
+            "trg_pad_idx": trg_field.vocab.stoi[trg_field.pad_token]
         }
         model = Seq2Seq(**model_params, device=device).to(device)
+        loss_fn = nn.CrossEntropyLoss(ignore_index=model_params["trg_pad_idx"])
         # init trainer
         trainer = NETTrainer(
             model=model,
@@ -156,12 +138,13 @@ def train(**kwargs):
             optimizer=torch.optim.Adam,
             learning_rate=kwargs["learning_rate"],
             device=device,
-            train_sampler=train_sampler,
-            loss_fn=nn.CrossEntropyLoss(ignore_index=PAD_IDX)
+            loss_fn=loss_fn
         )
         # save dependency files before training
-        src_lookup.save(kwargs["model_dir"] / "src_vocab.json")
-        trg_lookup.save(kwargs["model_dir"] / "trg_vocab.json")
+        with open(kwargs["model_dir"] / "src_field.dill", "wb") as dill_f:
+            dill.dump(src_field, dill_f)
+        with open(kwargs["model_dir"] / "trg_field.dill", "wb") as dill_f:
+            dill.dump(trg_field, dill_f)
         train_params = {
             "epochs": kwargs["epochs"],
             "lr": kwargs["learning_rate"],
@@ -178,7 +161,9 @@ def train(**kwargs):
                     "net-transofrmer",
                     model_params,
                     train_params)
-        logger.debug("Saved config and vocabulary at '{}'".format(kwargs["model_dir"]))
+        logger.info(
+            "Saved config and field objects at '{}'".format(kwargs["model_dir"])
+        )
         best_loss = trainer.epoch(n_epochs=kwargs["epochs"],
                                   clip=kwargs["clip"],
                                   model_dir=kwargs["model_dir"],

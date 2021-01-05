@@ -2,6 +2,7 @@ import torch
 
 import json
 import yaml
+import dill
 
 
 class NETModelFactory:
@@ -9,16 +10,17 @@ class NETModelFactory:
     def __init__(
         self,
         config_path,
-        vocab_path,
+        src_field_path,
+        trg_field_path,
         model_class,
-        vectorizer_class,
         lookup_loader,
         include_device_in_model,
         device
     ):
         self.model_class = model_class
         self.config = self._load_config(config_path)
-        self.vectorizer = vectorizer_class(lookup_loader(vocab_path))
+        self.src_field = self._load_field(src_field_path)
+        self.trg_field = self._load_field(trg_field_path)
         self.device = device
         self.include_device_in_model = include_device_in_model
 
@@ -26,6 +28,11 @@ class NETModelFactory:
         with open(config_path) as yml_file:
             config = yaml.load(yml_file, Loader=yaml.FullLoader)
         return config
+
+    def _load_field(self, field_path):
+        with open(field_path, 'rb') as dill_f:
+            field = dill.load(dill_f)
+        return field
 
     def produce(self, model_path, eval=True):
         if self.include_device_in_model:
@@ -39,4 +46,4 @@ class NETModelFactory:
         model.to(self.device)
         if eval:
             model.eval()
-        return model, self.vectorizer
+        return model, self.src_field, self.trg_field

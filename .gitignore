@@ -11,9 +11,10 @@ __pycache__/
 model_store/*/*.pt
 model_store/*/*.json
 model_store/*/*.zip
+model_store/*/*.dill
 
 
-# data set
+# training and validation data
 datasets/
 
 

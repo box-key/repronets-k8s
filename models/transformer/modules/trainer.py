@@ -28,7 +28,6 @@ class NETTrainer:
         optimizer,
         learning_rate,
         device,
-        train_sampler,
         loss_fn,
         weight_initializer=None
     ):
@@ -43,18 +42,30 @@ class NETTrainer:
         self.init_model()
         self.optimizer = optimizer(self.model.parameters(), lr=learning_rate)
         self.device = device
-        self.train_sampler = train_sampler
 
     def init_model(self):
+        logger.debug("Initializing weights")
         self.model.apply(self.weight_initializer)
 
     def train(self, clip):
         self.model.train()
         epoch_loss = 0
         for batch in tqdm(self.train_iter, total=len(self.train_iter), unit="batch"):
+            src = batch.source.permute(1, 0)
+            ## src = [batch_size, src_len]
+            trg = batch.target.permute(1, 0)
+            ## trg = [batch_size, src_len]
             # reset gradients
             self.optimizer.zero_grad()
-            loss = self.get_loss(batch)
+            # compute output
+            output, _ = self.model(src, trg[:, :-1])
+            ## output = [batch_size, trg_len, output_dim]
+            output_dim = output.shape[-1]
+            output = output.contiguous().view(-1, output_dim)
+            trg = trg[:, 1:].contiguous().view(-1)
+            ## output = [batch_size * trg_len - 1, output_dim]
+            ## trg = [batch_size * trg_len - 1]
+            loss = self.loss_fn(output, trg)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip)
             self.optimizer.step()
@@ -67,31 +78,25 @@ class NETTrainer:
         self.model.eval()
         epoch_loss = 0
         for batch in tqdm(iterator, total=len(iterator), unit="batch"):
-            loss = self.get_loss(batch)
+            src = batch.source.permute(1, 0)
+            ## src = [batch_size, src_len]
+            trg = batch.target.permute(1, 0)
+            ## trg = [batch_size, src_len]
+            output, _ = self.model(src, trg[:, :-1])
+            ## output = [batch_size, trg_len, output_dim]
+            output_dim = output.shape[-1]
+            output = output.contiguous().view(-1, output_dim)
+            trg = trg[:, 1:].contiguous().view(-1)
+            ## output = [batch_size * trg_len - 1, output_dim]
+            ## trg = [batch_size * trg_len - 1]
+            loss = self.loss_fn(output, trg)
             epoch_loss += loss.item()
         return epoch_loss / len(iterator)
-
-    def get_loss(self, batch):
-        src_padded = batch['src_padded'].permute(1, 0).to(self.device)
-        ## src_padded = [batch_size, src_len]
-        trg_padded = batch['trg_padded'].permute(1, 0).to(self.device)
-        ## trg_padded = [batch_size, trg_len]
-        output, _ = self.model(src=src_padded, trg=trg_padded[:, :-1])
-        ## output = [batch_size, trg_len - 1, vocab_size]
-        output_dim = output.shape[2]
-        output = output.contiguous().view(-1, output_dim)
-        ## output = [batch size * trg len - 1, output dim]
-        trg_padded = trg_padded[:, 1:].contiguous().view(-1)
-        # trg = [batch size * trg len - 1]
-        # utils.print_shape(trg_padded=trg_padded, output=output)
-        return self.loss_fn(output, trg_padded)
 
     def epoch(self, n_epochs, clip, model_dir, checkpoint):
         best_loss = float("inf")
         for epoch in range(1, n_epochs+1):
             # must update epoch if sampler is DistributedSampler
-            if isinstance(self.train_sampler, DistributedSampler):
-                self.train_sampler.set_epoch(epoch)
             train_loss = self.train(clip)
             val_loss = self.evaluate(self.val_iter)
             if epoch % checkpoint == 0:
