@@ -6,6 +6,9 @@ import torch
 class NETDataLoader:
 
     def __init__(self, pad_value):
+        raise RuntimeError(
+            "This class might have a bug. Use Torchtext's BucketLoader instead."
+        )
         self.pad_value = pad_value
 
     def __call__(self, batch):

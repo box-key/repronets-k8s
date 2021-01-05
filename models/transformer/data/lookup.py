@@ -2,9 +2,6 @@ import json
 import logging
 
 
-logger = logging.getLogger(__name__)
-
-
 class SymLookup:
 
     pad_token = '<pad>'
@@ -37,7 +34,6 @@ class SymLookup:
 
     @classmethod
     def build(cls, data_path):
-        logger.debug("Building vocabulary")
         src_vocab, trg_vocab = {}, {}
         # read data file
         with open(data_path, "r", encoding='utf-8') as f:
@@ -47,9 +43,9 @@ class SymLookup:
                 trg_vocab.update({phoneme:1 for phoneme in items[1:]})
             src_vocab_list = [cls.pad_token, cls.eos_token, cls.sos_token]
             trg_vocab_list = [cls.pad_token, cls.eos_token, cls.sos_token]
-            for key in sorted(src_vocab.keys()):
+            for key in src_vocab.keys():
                 src_vocab_list.append(key)
-            for key in sorted(trg_vocab.keys()):
+            for key in trg_vocab.keys():
                 trg_vocab_list.append(key)
         # build itos and stoi for src
         src_itos = {}

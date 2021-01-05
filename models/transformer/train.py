@@ -41,7 +41,6 @@ def save_config(output_path, model_name, model_params, train_params):
 
 @click.command()
 @click.option("--batch-size", type=click.INT, default=64)
-@click.option("--trg-separator", type=click.STRING, default=" ", required=True)
 @click.option("--learning-rate", type=click.FLOAT, default=0.005)
 @click.option("--dropout", type=click.FLOAT, default=0.2)
 @click.option("--n-heads", type=click.INT, default=8)

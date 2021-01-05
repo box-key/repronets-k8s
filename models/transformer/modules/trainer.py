@@ -72,16 +72,16 @@ class NETTrainer:
         return epoch_loss / len(iterator)
 
     def get_loss(self, batch):
-        src_padded = batch['src_padded'].permute(1, 0).to(self.device)
-        ## src_padded = [batch_size, src_len]
-        trg_padded = batch['trg_padded'].permute(1, 0).to(self.device)
-        ## trg_padded = [batch_size, trg_len]
-        output, _ = self.model(src=src_padded, trg=trg_padded[:, :-1])
+        src = batch.source.permute(1, 0).to(self.device)
+        ## src = [batch_size, src_len]
+        trg = batch.target.permute(1, 0).to(self.device)
+        ## trg = [batch_size, trg_len]
+        output, _ = self.model(src, trg[:, :-1])
         ## output = [batch_size, trg_len - 1, vocab_size]
-        output_dim = output.shape[2]
+        output_dim = output.shape[-1]
         output = output.contiguous().view(-1, output_dim)
         ## output = [batch size * trg len - 1, output dim]
-        trg_padded = trg_padded[:, 1:].contiguous().view(-1)
+        trg = trg[:, 1:].contiguous().view(-1)
         # trg = [batch size * trg len - 1]
         # utils.print_shape(trg_padded=trg_padded, output=output)
         return self.loss_fn(output, trg_padded)

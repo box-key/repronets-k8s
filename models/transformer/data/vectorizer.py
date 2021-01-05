@@ -4,6 +4,9 @@ import torch
 class NETVectorizer:
 
     def __init__(self, lookup):
+        raise RuntimeError(
+            "This class might have a bug. Use Torchtext's Field instead."
+        )
         self.lookup = lookup
         self.special_tokens = set([lookup.eos_token, lookup.sos_token])
 
