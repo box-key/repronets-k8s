@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 
 import os
 import requests
+import logging
 
 
 app = Flask(__name__)
@@ -21,6 +22,13 @@ BEAM_SIZE = [1, 2, 3, 4, 5]
 DEFAULT_BSIZE = 1
 PS_ROUTE = 'http://0.0.0.0:5001/predict'
 TR_ROUTE = 'http://0.0.0.0:5002/predict'
+
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
 
 def get_output(resp=None, language=None, bsize=None):
@@ -61,19 +69,20 @@ def get_ts_output(language, beam_size, input_text):
 @app.route('/', methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        language = request.form.get("language")
-        beam_size = int(request.form.get("beam_size"))
-        input_text = request.form["input_text"]
-        if len(input_text) == 0:
-            return get_output()
+        language = request.form.get("language", "")
+        beam_size = int(request.form.get("beam_size", 0))
+        input_text = request.form.get("input_text", "")
+        logger.debug("inputs = '{}'".format(request.form))
         # get phonetisaurus output
         ps_resp = get_ps_output(language, beam_size, input_text)
         if ps_resp['status'] == 400:
             return get_output(resp={"error": ps_resp['message']})
+        logger.debug("output from phonetisaurus = '{}'".format(ps_resp))
         # get transformer output
         ts_resp = get_ts_output(language, beam_size, input_text)
         if ts_resp['status'] == 400:
             return get_output(resp={"error": ts_resp['message']})
+        logger.debug("output from transformer = '{}'".format(ts_resp))
         predictions = []
         ranks = ["No.{}".format(i + 1) for i in range(beam_size)]
         for rank in ranks:
