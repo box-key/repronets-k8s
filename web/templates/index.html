@@ -28,23 +28,7 @@
         </div>
       </form>
       {% if resp is not none %}
-         <table>
-             <tr>
-                <th> Ranking </th>
-             </tr>
-           {% for name in resp["model_names"] %}
-             <tr>
-                <th> {{ name }} </th>
-             </tr>
-           {% endfor %}
-           {% for row in resp["predictions"] %}
-             <tr>
-                <td> {{ row["rank"] }} </td>
-                <td> {{ row["ps"] }} </td>
-                <td> {{ row["ts"] }} </td>
-             </tr>
-           {% endfor %}
-        </table>
+      	  {{ resp["table"]  }}
       {% endif %}
     </body>
 </html>

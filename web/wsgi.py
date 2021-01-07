@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request
+from flask_table import Table, Col
 
 import os
 import requests
+import json
 import logging
 
 
@@ -16,12 +18,12 @@ LANGUAGES = [
     "arabic",
     "russian"
 ]
-MODELS = ["phonetisaurus", "transformer"]
+MODELS = [" Phonetisaurus ", " Transformer "]
 DEFAULT_LAN = "japanese"
 BEAM_SIZE = [1, 2, 3, 4, 5]
 DEFAULT_BSIZE = 1
 PS_ROUTE = 'http://0.0.0.0:5001/predict'
-TR_ROUTE = 'http://0.0.0.0:5002/predict'
+TS_ROUTE = 'http://0.0.0.0:5002/predict'
 
 
 logging.basicConfig(
@@ -29,6 +31,25 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 logger = logging.getLogger(__name__)
+
+
+class OutputTable(Table):
+    rank = Col("Rank")
+    ps_prediction = Col(MODELS[0])
+    ts_prediction = Col(MODELS[1])
+    border = True
+
+
+def get_table_items(ps_resp, ts_resp, beam_size):
+    items = []
+    ranks = ["No.{}".format(i + 1) for i in range(beam_size)]
+    for rank in ranks:
+        item = {}
+        item["ps_prediction"] = ps_resp["data"][rank]
+        item["ts_prediction"] = ts_resp["data"][rank]
+        item["rank"] = rank
+        items.append(item)
+    return items
 
 
 def get_output(resp=None, language=None, bsize=None):
@@ -62,7 +83,8 @@ def get_ts_output(language, beam_size, input_text):
         "beam_size": beam_size,
         "input": input_text
     }
-    resp = requests.post(PS_ROUTE, data=payload)
+    resp = requests.post(TS_ROUTE, data=json.dumps(payload))
+    logger.debug(resp.content)
     return resp.json()
 
 
@@ -83,17 +105,10 @@ def index():
         if ts_resp['status'] == 400:
             return get_output(resp={"error": ts_resp['message']})
         logger.debug("output from transformer = '{}'".format(ts_resp))
-        predictions = []
-        ranks = ["No.{}".format(i + 1) for i in range(beam_size)]
-        for rank in ranks:
-            prediction = {}
-            prediction["ps"] = ps_resp["data"][rank]
-            prediction["ts"] = ts_resp["data"][rank]
-            prediction["rank"] = rank
-            predictions.append(prediction)
+        items = get_table_items(ps_resp, ts_resp, beam_size)
         resp = {
             "model_names": MODELS,
-            "predictions": predictions
+            "table": OutputTable(items)
         }
         return get_output(resp=resp,
                           language=language,
