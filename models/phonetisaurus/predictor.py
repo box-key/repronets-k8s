@@ -40,7 +40,7 @@ def index():
     input_text = request.args.get("input", "")
     if len(input_text) == 0:
         resp = {"status": 400, "message": "input is empty"}
-        return jsonify(resp)
+        return json.dumps(resp)
     elif beam_size <= 0:
         resp = {
             "status": 400,
