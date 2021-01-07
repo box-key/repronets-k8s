@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 
 import os
 import requests
 import subprocess
 import re
+import json
 
 
 app = Flask(__name__)
@@ -27,7 +28,12 @@ def format_output(output):
     return formatted_output
 
 
-@app.route('/predict', methods=("GET"))
+@app.route('/', methods=["GET"])
+def test():
+    return 'Hello world'
+
+
+@app.route('/predict', methods=["GET"])
 def index():
     language = request.args.get("language", "")
     beam_size = int(request.args.get("beam_size", 0))
@@ -41,7 +47,7 @@ def index():
             "message": ("Beam size must be grater than 0, instead "
                         "received = '{}'".format(beam_size))
         }
-        return jsonify(resp)
+        return json.dumps(resp)
     # lower text and remove white space
     input_text = input_text.lower().replace(" ", "")
     # call phonetisaurus to get prediction
@@ -62,11 +68,11 @@ def index():
             "status": 400,
             "message": "input language = '{}' doesn't exist".format(language)
         }
-        return jsonify(resp)
+        return json.dumps(resp)
     # format output
-    result = {
-        "data": format_output(output),
+    resp = {
+        "data": output,
         "status": 200,
         "message": "Successfully make predictions"
     }
-    return jsonify(resp)
+    return json.dumps(resp, ensure_ascii=False)
