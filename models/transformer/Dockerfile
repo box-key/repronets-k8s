@@ -1,4 +1,4 @@
-FROM bentoml/model-server:0.10.1-py38
+FROM bentoml/model-server:0.10.1-py37
 
 # Configure PIP install arguments, e.g. --index-url, --trusted-url, --extra-index-url
 ARG EXTRA_PIP_INSTALL_ARGS=
@@ -27,14 +27,8 @@ RUN if [ -f /bento/bentoml-init.sh ]; then bash -c /bento/bentoml-init.sh; fi
 # copy over model files
 COPY . /bento
 
-# install torch for cpu
-RUN pip install torch==1.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
-
-# copy models
-COPY model_store /bento/model_store
-
 # the env var $PORT is required by heroku container runtime
-ENV PORT 1133
+ENV PORT 5000
 EXPOSE $PORT
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]

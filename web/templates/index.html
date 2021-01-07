@@ -12,14 +12,14 @@
         in
         <select name="language">
           {% for lan in languages %}
-            <option value="{{lan}}" {% if lan==selected_lan %} selected="selected" {% endif %}>{{lan}}</option>
+            <option value="{{lan}}" {% if lan==selected_lan %} selected="selected" {% endif %}>{{ lan }}</option>
           {% endfor %}
         </select>
         <br>
         Number of predictions
         <select name="beam_size">
             {% for bsize in beam_size %}
-                <option value="{{bsize}}" {% if bsize==selected_bsize %} selected="selected" {% endif %}>{{bsize}}</option>
+                <option value="{{bsize}}" {% if bsize==selected_bsize %} selected="selected" {% endif %}>{{ bsize }}</option>
             {% endfor %}
         </select>
         <br>
@@ -27,12 +27,21 @@
           <input type="submit" value="Submit">
         </div>
       </form>
-      {% if res is not none %}
+      {% if resp is not none %}
          <table>
-           {% for key, value in res["prediction"].items() %}
              <tr>
-                <th> {{key}} </th>
-                <td> {{value}} </td>
+                <th> Ranking </th>
+             </tr>
+           {% for name in resp["model_names"] %}
+             <tr>
+                <th> {{ name }} </th>
+             </tr>
+           {% endfor %}
+           {% for row in resp["predictions"] %}
+             <tr>
+                <td> {{ row["rank"] }} </td>
+                <td> {{ row["ps"] }} </td>
+                <td> {{ row["ts"] }} </td>
              </tr>
            {% endfor %}
         </table>

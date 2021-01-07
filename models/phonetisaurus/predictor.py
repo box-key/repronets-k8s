@@ -22,8 +22,8 @@ def get_output(language, input_text, beam_size):
 
 def format_output(output):
     formatted_output = {}
-    for i, pred in enumerate(output):
-        key = "No.{}".format(i + 1)
+    for i, pred in enumerate(output, start=1):
+        key = "No.{}".format(i)
         formatted_output[key] = pred
     return formatted_output
 

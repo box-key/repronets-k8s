@@ -28,4 +28,4 @@ class NETransliterator:
             if pred_token == trg_field.vocab.stoi[trg_field.eos_token]:
                 break
         trg_tokens = [trg_field.vocab.itos[i] for i in trg_indexes]
-        return trg_tokens[1:-1], attention
+        return trg_tokens[1:-1]
