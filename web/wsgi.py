@@ -119,8 +119,8 @@ def index():
 @app.route("/predict", methods=["GET"])
 def predict():
     language = request.args.get("language", "")
-    input_text = request.args.get("input_text", "")
-    model_type = request.args.get("")
+    input_text = request.args.get("input", "")
+    model_type = request.args.get("model_type", "")
     # 400 if receive non integer value
     try:
         beam_size = int(request.args.get("beam_size", 1))
@@ -137,18 +137,25 @@ def predict():
             "message": "'langauge' and 'input_text' must be string."
         }
         return json.dumps(resp)
+    if language not in LAN_LOOKUP:
+        resp = {
+            "status": 400,
+            "message": ("Currently '{}' options are available, instead "
+                        "received '{}'".format(LANGUAGES, language))
+        }
+        return json.dumps(resp)
     # get inference
-    if model_type.lower() == "phonetisaurus":
+    if model_type == "phonetisaurus":
         output = get_ps_output(language, beam_size, input_text)
-    elif model_type.lower() == "transformer":
+    elif model_type == "transformer":
         output = get_ts_output(language, beam_size, input_text)
     else:
         # 400 if model_type doesn't match
         resp = {
             "status": 400,
-            "message": ("Currently '{}' models are available, instead "
-                        "received '{}'".format(MODEL_LOOKUP, model_type))
+            "message": ("Currently '{}' models are available, instead received "
+                        "'{}'".format([x.lower() for x in MODELS], model_type))
         }
         return json.dumps(resp)
     # return output from the model
-    return json.dumps(output)
+    return json.dumps(output, ensure_ascii=False)
