@@ -11,17 +11,17 @@ app = Flask(__name__)
 
 
 LANGUAGES = [
-    "japanese",
-    "korean",
+    "arabic",
     "chinese",
     "hebrew",
-    "arabic",
+    "japanese",
+    "korean",
     "russian"
 ]
-MODELS = [" Phonetisaurus ", " Transformer "]
-DEFAULT_LAN = "japanese"
+LAN_LOOKUP = set(LANGUAGES)
+MODELS = ["Phonetisaurus", "Transformer"]
+MODEL_LOOKUP = set([x.lower() for x in MODELS])
 BEAM_SIZE = [1, 2, 3, 4, 5]
-DEFAULT_BSIZE = 1
 PS_ROUTE = 'http://0.0.0.0:5001/predict'
 TS_ROUTE = 'http://0.0.0.0:5002/predict'
 
@@ -55,8 +55,8 @@ def get_table_items(ps_resp, ts_resp, beam_size):
 def get_output(resp=None, language=None, bsize=None):
     # if inputs are None, returns default page
     if resp is None and language is None and bsize is None:
-        language = DEFAULT_LAN
-        bsize = DEFAULT_BSIZE
+        language = LANGUAGES[0]
+        bsize = BEAM_SIZE[0]
         resp = None
     return render_template('index.html',
                             languages=LANGUAGES,
@@ -92,7 +92,7 @@ def get_ts_output(language, beam_size, input_text):
 def index():
     if request.method == "POST":
         language = request.form.get("language", "")
-        beam_size = int(request.form.get("beam_size", 0))
+        beam_size = int(request.form.get("beam_size", 1))
         input_text = request.form.get("input_text", "")
         logger.debug("inputs = '{}'".format(request.form))
         # get phonetisaurus output
@@ -114,3 +114,41 @@ def index():
                           language=language,
                           bsize=beam_size)
     return get_output()
+
+
+@app.route("/predict", methods=["GET"])
+def predict():
+    language = request.args.get("language", "")
+    input_text = request.args.get("input_text", "")
+    model_type = request.args.get("")
+    # 400 if receive non integer value
+    try:
+        beam_size = int(request.args.get("beam_size", 1))
+    except ValueError:
+        resp = {
+            "status": 400,
+            "message": ("'beam_size' must be a positive integer, instead "
+                        "received '{}'".format(request.args.get("beam_size")))
+        }
+        return json.dumps(resp)
+    if not isinstance(language, str) or not isinstance(input_text, str):
+        resp = {
+            "status": 400,
+            "message": "'langauge' and 'input_text' must be string."
+        }
+        return json.dumps(resp)
+    # get inference
+    if model_type.lower() == "phonetisaurus":
+        output = get_ps_output(language, beam_size, input_text)
+    elif model_type.lower() == "transformer":
+        output = get_ts_output(language, beam_size, input_text)
+    else:
+        # 400 if model_type doesn't match
+        resp = {
+            "status": 400,
+            "message": ("Currently '{}' models are available, instead "
+                        "received '{}'".format(MODEL_LOOKUP, model_type))
+        }
+        return json.dumps(resp)
+    # return output from the model
+    return json.dumps(output)
