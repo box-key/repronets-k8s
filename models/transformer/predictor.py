@@ -34,11 +34,11 @@ class BentoNETransliterator(bento.BentoService):
 
     device = torch.device('cpu')
 
-    def format_output(self, output_list, beam_size):
-        formatted_output = {"No.1": ''.join(output_list)}
-        for i in range(beam_size - 1):
-            key = "No.{}".format(i+2)
-            formatted_output[key] = 'N/A'
+    def format_output(self, output):
+        formatted_output = {}
+        for i, pred in enumerate(output, start=1):
+            key = "No.{}".format(i)
+            formatted_output[key] = pred
         return formatted_output
 
     @bento.api(input=JsonInput(), output=JsonOutput(), batch=False)
@@ -86,22 +86,28 @@ class BentoNETransliterator(bento.BentoService):
         else:
             resp = {
                 "status": 400,
-                "message": "input language = '{}' doesn't exist".format(language)
+                "message": "language = '{}' is not supported".format(language)
             }
             return resp
         # get prediction
         prediction = self.artifacts.predictor(
             named_entity=input_text,
             max_pred_len=len(input_text) + 2,
+            beam_size=beam_size,
             model=model,
             src_field=src_field,
             trg_field=trg_field,
-            device=self.device
+            device=self.device,
+            pad_idx=trg_field.pad_idx,
+            sos_idx=trg_field.sos_idx,
+            eos_idx=trg_field.eos_idx,
+            special_tokens=trg_field.special_tokens_idxs
         )
+        print(self.format_output)
         resp = {
-            "data": self.format_output(prediction, beam_size),
+            "data": self.format_output(prediction),
             "status": 200,
-            "message": "Successfully make predictions"
+            "message": "Successfully made predictions"
         }
         return resp
 
@@ -117,6 +123,19 @@ def get_articrafts(dir_path, model_path):
     return model, src, trg
 
 
+def format_torchtext_field(field):
+    """Add necessary attributes for inference to torchtext Field object."""
+    pad_idx = field.vocab.stoi[field.pad_token]
+    sos_idx = field.vocab.stoi[field.init_token]
+    eos_idx = field.vocab.stoi[field.eos_token]
+    special_tokens_idxs = set([pad_idx, sos_idx, eos_idx])
+    setattr(field, 'pad_idx', pad_idx)
+    setattr(field, 'sos_idx', sos_idx)
+    setattr(field, 'eos_idx', eos_idx)
+    setattr(field, 'special_tokens_idxs', special_tokens_idxs)
+    return field
+
+
 def pack_model():
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
@@ -130,31 +149,43 @@ def pack_model():
     bento_net = BentoNETransliterator()
     # pack arabic model
     model, src, trg = get_articrafts(path / 'arabic', '50.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_ar", model)
     bento_net.pack("ar_fields", {"source": src, "target": trg})
     logger.info("packed arabic model")
     # pack chiense model
     model, src, trg = get_articrafts(path / 'chinese', '50.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_ch", model)
     bento_net.pack("ch_fields", {"source": src, "target": trg})
     logger.info("packed chinese model")
     # pack hebrew model
     model, src, trg = get_articrafts(path / 'hebrew', '50.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_he", model)
     bento_net.pack("he_fields", {"source": src, "target": trg})
     logger.info("packed hebrew model")
     # pack japanese model
     model, src, trg = get_articrafts(path / 'katakana', '30.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_ja", model)
     bento_net.pack("ja_fields", {"source": src, "target": trg})
     logger.info("packed japanese model")
     # pack korean model
     model, src, trg = get_articrafts(path / 'korean', '50.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_ko", model)
     bento_net.pack("ko_fields", {"source": src, "target": trg})
     logger.info("packed korean model")
     # pack russian model
     model, src, trg = get_articrafts(path / 'russian', '50.pt')
+    # customize target field object
+    trg = format_torchtext_field(trg)
     bento_net.pack("model_ru", model)
     bento_net.pack("ru_fields", {"source": src, "target": trg})
     logger.info("packed russian model")
