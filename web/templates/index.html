@@ -1,9 +1,9 @@
 <html>
     <head>
-        <title>Named Entity Transliterator</title>
+        <title>ReproNETs</title>
     </head>
     <body>
-      Hey NET, how to write
+      Hey ReproNETs, how to write
       <form method="post">
         <div class="form-group">
         <input type="text" name="input_text" class="form-control"
@@ -15,6 +15,7 @@
             <option value="{{lan}}" {% if lan==selected_lan %} selected="selected" {% endif %}>{{ lan }}</option>
           {% endfor %}
         </select>
+	?
         <br>
         Number of predictions
         <select name="beam_size">
