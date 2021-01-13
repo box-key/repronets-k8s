@@ -139,7 +139,8 @@ def evaluate(**kwargs):
                                          tokenize_input=False)
             # print(predictions[0], type(predictions[0]), example['target'])
             if i < kwargs["num_print"]:
-                logger.info("Source input: {}".format(''.join(example["source"])))
+                logger.info("Source: {}".format(''.join(example["source"])))
+                logger.info("Target: {}".format(''.join(example["target"])))
                 for b, p in enumerate(predictions):
                     logger.info("Beam {}: {}".format(b, p))
             results.append({
