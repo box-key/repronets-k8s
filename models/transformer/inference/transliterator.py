@@ -132,11 +132,7 @@ class NETransliterator:
         trg_field,
         device
     ):
-        if tokenize_input:
-            input_tokens = list(self.clean_input(named_entity))
-        else:
-            input_tokens = named_entity
-        tokens = [src_field.init_token] + input_tokens + [src_field.eos_token]
+        tokens = [src_field.init_token] + named_entity + [src_field.eos_token]
         src_indexes = [src_field.vocab.stoi[token] for token in tokens]
         src_tensor = torch.LongTensor(src_indexes).unsqueeze(0).to(device)
         src_mask = model.make_src_mask(src_tensor)
