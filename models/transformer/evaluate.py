@@ -125,18 +125,25 @@ def evaluate(**kwargs):
         special_tokens_idxs = set([pad_idx, sos_idx, eos_idx])
         results = []
         for i, example in tqdm(enumerate(examples), initial=kwargs['num_print']):
-            predictions = transliterator(named_entity=example["source"],
-                                         max_pred_len=32,
-                                         beam_size=kwargs["beam"],
-                                         model=model,
-                                         src_field=src_field,
-                                         trg_field=trg_field,
-                                         device=device,
-                                         pad_idx=pad_idx,
-                                         sos_idx=sos_idx,
-                                         eos_idx=eos_idx,
-                                         special_tokens=special_tokens_idxs,
-                                         tokenize_input=False)
+            # predictions = transliterator(named_entity=example["source"],
+            #                              max_pred_len=32,
+            #                              beam_size=kwargs["beam"],
+            #                              model=model,
+            #                              src_field=src_field,
+            #                              trg_field=trg_field,
+            #                              device=device,
+            #                              pad_idx=pad_idx,
+            #                              sos_idx=sos_idx,
+            #                              eos_idx=eos_idx,
+            #                              special_tokens=special_tokens_idxs,
+            #                              tokenize_input=False)
+            prediction = transliterator.greedy_search(named_entity=example["source"],
+                                                     max_pred_len=30,
+                                                     model=model,
+                                                     src_field=src_field,
+                                                     trg_field=trg_field,
+                                                     device=device)
+            predictions = [prediction]
             # print(predictions[0], type(predictions[0]), example['target'])
             if i < kwargs["num_print"]:
                 logger.info("Source: {}".format(''.join(example["source"])))
@@ -148,7 +155,8 @@ def evaluate(**kwargs):
                 "predictions": predictions,
                 "truth": ''.join(example["target"])
             })
-        accuracies = compute_accuracy(results, kwargs["beam"])
+        # accuracies = compute_accuracy(results, kwargs["beam"])
+        accuracies = compute_accuracy(results, 1)
         logger.info("Accuracy:\n{}".format(accuracies))
         bottom_beam = "{}best".format(kwargs["beam"])
         if best_accuracy < accuracies[bottom_beam]:

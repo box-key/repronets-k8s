@@ -121,3 +121,34 @@ class NETransliterator:
         # remove white spaces
         word = word.replace(' ', '')
         return word
+
+    @torch.no_grad()
+    def greedy_search(
+        self,
+        named_entity,
+        max_pred_len,
+        model,
+        src_field,
+        trg_field,
+        device
+    ):
+        if tokenize_input:
+            input_tokens = list(self.clean_input(named_entity))
+        else:
+            input_tokens = named_entity
+        tokens = [src_field.init_token] + input_tokens + [src_field.eos_token]
+        src_indexes = [src_field.vocab.stoi[token] for token in tokens]
+        src_tensor = torch.LongTensor(src_indexes).unsqueeze(0).to(device)
+        src_mask = model.make_src_mask(src_tensor)
+        enc_src = model.encoder(src_tensor, src_mask)
+        trg_indexes = [trg_field.vocab.stoi[trg_field.init_token]]
+        for i in range(max_pred_len):
+            trg_tensor = torch.LongTensor(trg_indexes).unsqueeze(0).to(device)
+            trg_mask = model.make_trg_mask(trg_tensor)
+            output, attention = model.decoder(trg_tensor, enc_src, trg_mask, src_mask)
+            pred_token = output.argmax(2)[:,-1].item()
+            trg_indexes.append(pred_token)
+            if pred_token == trg_field.vocab.stoi[trg_field.eos_token]:
+                break
+        trg_tokens = [trg_field.vocab.itos[i] for i in trg_indexes]
+        return ''.join(trg_tokens[1:-1])
