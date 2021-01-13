@@ -13,8 +13,10 @@ model_store/*/*.json
 model_store/*/*.zip
 model_store/*/*.dill
 
+
 # wheel file
 *.whl
+
 
 # training and validation data
 datasets/

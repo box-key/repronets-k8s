@@ -80,12 +80,16 @@ class NETransliterator:
         pad_idx,
         sos_idx,
         eos_idx,
-        special_tokens
+        special_tokens,
+        tokenize_input=True
     ):
         # set beam object
         beam = Beam(beam_size, pad_idx, sos_idx, eos_idx, device)
         # process source
-        input_tokens = list(self.clean_input(named_entity))
+        if tokenize_input:
+            input_tokens = list(self.clean_input(named_entity))
+        else:
+            input_tokens = named_entity
         tokens = [src_field.init_token] + input_tokens + [src_field.eos_token]
         src_indexes = [src_field.vocab.stoi[token] for token in tokens]
         src_tensor = torch.tensor(src_indexes, dtype=torch.long).unsqueeze(0).to(device)
