@@ -105,13 +105,7 @@ def evaluate(**kwargs):
             # extract source and target tokens
             items = line.split()
             source = list(items[0].strip())
-            target = items[1:]
-            # fix example like ロ ッ ク モ ン ド	1
-            if isinstance(target[-1], int):
-                target = target[:-1]
-            # fix example like ロ ッ ク モ ン ド1
-            elif isinstance(target[-1][-1], int):
-                target = target[-1][:-1]
+            target = items[1:-1]
             # store an example
             source_word = ''.join(source)
             if source_word not in source_words:
