@@ -35,7 +35,7 @@ class Encoder(nn.Module):
         src_len = src.shape[1]
         pos = torch.arange(0, src_len).unsqueeze(0).repeat(batch_size, 1).to(self.device)
         #pos = [batch size, src len]
-        src = self.dropout((self.tok_embedding(src) * self.scale) + self.pos_embedding(pos))
+        src = (self.tok_embedding(src) * self.scale) + self.pos_embedding(pos)
         #src = [batch size, src len, hid dim]
         for layer in self.layers:
             src = layer(src, src_mask)
@@ -174,7 +174,7 @@ class Decoder(nn.Module):
         trg_len = trg.shape[1]
         pos = torch.arange(0, trg_len).unsqueeze(0).repeat(batch_size, 1).to(self.device)
         #pos = [batch size, trg len]
-        trg = self.dropout((self.tok_embedding(trg) * self.scale) + self.pos_embedding(pos))
+        trg = (self.tok_embedding(trg) * self.scale) + self.pos_embedding(pos)
         #trg = [batch size, trg len, hid dim]
         for layer in self.layers:
             trg, attention = layer(trg, enc_src, trg_mask, src_mask)

@@ -117,7 +117,7 @@ def evaluate(**kwargs):
     best_accuracy = 0
     best_model = {}
     for model_path in models:
-        logger.info("Testing model='{}'".format(model_path))
+        logger.info("Testing model='{}'".format(model_path.stem))
         model, src_field, trg_field = factory.produce(model_path, eval=True)
         pad_idx = trg_field.vocab.stoi[trg_field.pad_token]
         sos_idx = trg_field.vocab.stoi[trg_field.init_token]
