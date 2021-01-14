@@ -68,7 +68,7 @@ def compute_accuracy(results, beam_size):
 def evaluate(**kwargs):
     # config logger
     logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        format= '%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         level=logging.INFO
     )
     logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ def evaluate(**kwargs):
         src_field_path = dir_path / 'src_field.dill'
         trg_field_path = dir_path / 'trg_field.dill'
         models = [model_path]
-        logger.info("Test model='{}'".format(model_path))
+        logger.info("Test model='{}'".format(model_path.stem))
     else:
         raise RuntimeError("You must specify either 'model_dir' or 'model_path'")
     # set model factory
@@ -106,6 +106,12 @@ def evaluate(**kwargs):
             items = line.split()
             source = list(items[0].strip())
             target = items[1:]
+            # fix example like ロ ッ ク モ ン ド	1
+            if isinstance(target[-1], int):
+                target = target[:-1]
+            # fix example like ロ ッ ク モ ン ド1
+            elif isinstance(target[-1][-1], int):
+                target = target[-1][:-1]
             # store an example
             source_word = ''.join(source)
             if source_word not in source_words:

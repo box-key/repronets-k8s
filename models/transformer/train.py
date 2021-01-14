@@ -74,7 +74,7 @@ def train(**kwargs):
     elif kwargs["log_level"] == "warning":
         log_level = logging.WARNING
     logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         level=log_level
     )
     logger = logging.getLogger(__name__)
