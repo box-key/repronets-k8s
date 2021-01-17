@@ -11,13 +11,13 @@ share_vocab: False
 ## data path
 data:
   corpus:
-    path_src: opennmt/datasets/katakana/src.txt
-    path_tgt: opennmt/datasets/katakana/tgt.txt
+    path_src: opennmt/datasets/katakana/src-train.txt
+    path_tgt: opennmt/datasets/katakana/tgt-train.txt
     transforms: []
     weight: 1
   valid:
-    path_src: opennmt/datasets/katakana/src.txt
-    path_tgt: opennmt/datasets/katakana/tgt.txt
+    path_src: opennmt/datasets/katakana/src-val.txt
+    path_tgt: opennmt/datasets/katakana/tgt-val.txt
     transforms: []
 
 ## model path
