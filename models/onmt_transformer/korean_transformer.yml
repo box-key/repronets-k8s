@@ -1,9 +1,9 @@
 ## sample path
-save_data: opennmt/run/sample
+save_data: opennmt/korean/run/sample
 
 ## vocab path
-src_vocab: opennmt/run/katakana/vocab.src
-tgt_vocab: opennmt/run/katakana/vocab.tgt
+src_vocab: opennmt/korean/run/vocab.src
+tgt_vocab: opennmt/korean/run/vocab.tgt
 overwrite: True
 share_vocab: False
 # n_sample: 15811
@@ -11,31 +11,33 @@ share_vocab: False
 ## data path
 data:
   corpus:
-    path_src: opennmt/datasets/katakana/src-train.txt
-    path_tgt: opennmt/datasets/katakana/tgt-train.txt
+    path_src: opennmt/korean/datasets/src-train.txt
+    path_tgt: opennmt/korean/datasets/tgt-train.txt
     transforms: []
     weight: 1
   valid:
-    path_src: opennmt/datasets/katakana/src-val.txt
-    path_tgt: opennmt/datasets/katakana/tgt-val.txt
+    path_src: opennmt/korean/datasets/src-val.txt
+    path_tgt: opennmt/korean/datasets/tgt-val.txt
     transforms: []
 
-## model path
-save_model: opennmt/run/katakana/models
-save_checkpoint_steps: 10 ## save a model every this iterations
-train_steps: 100 ## epochs
-valid_steps: 10 ## Run evaluation every this many iterations. (from official docs)
+## training parameters
+save_model: opennmt/korean/run/models
+save_checkpoint_steps: 500 ## save a model every this iterations
+train_steps: 5000 ## epochs
+valid_steps: 500 ## Run evaluation every this many iterations. (from official docs)
+report_every: 500
 seed: 42
 
 ## batch parameters
 ## More informaiton: https://opennmt.net/OpenNMT-py/options/train.html
 batch_type: "tokens"
 bucket_size: 15811
-batch_size: 256
+batch_size: 4096
 # valid_batch_size: 8
 max_generator_batches: 0
 accum_count: [4]
 accum_steps: [0]
+gpu_ranks: [0]
 
 ## Optimizer
 model_dtype: "fp32"

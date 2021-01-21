@@ -36,3 +36,7 @@ venv/
 
 # opennmt folder
 opennmt/
+
+
+# ctranslate2 models
+ctranslate2_released/
