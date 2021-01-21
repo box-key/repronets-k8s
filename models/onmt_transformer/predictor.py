@@ -85,28 +85,29 @@ def pack_model():
     path = pathlib.Path(__file__).absolute().parents[2] / 'model_store'
     logger.debug("model directory path = '{}'".format(path))
     # start packing
+    bento_net = BentoNETransliterator()
     # pack arabic model
-    model = ctranslate2.Translator(path / 'arabic' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'arabic' / 'ctranslate2_released'))
     bento_net.pack("model_ara", model)
     logger.info("packed arabic model")
     # pack chiense model
-    model = ctranslate2.Translator(path / 'chiense' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'chinese' / 'ctranslate2_released'))
     bento_net.pack("model_chi", model)
     logger.info("packed chinese model")
     # pack hebrew model
-    model = ctranslate2.Translator(path / 'hebrew' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'hebrew' / 'ctranslate2_released'))
     bento_net.pack("model_heb", model)
     logger.info("packed hebrew model")
     # pack japanese model
-    model = ctranslate2.Translator(path / 'japanese' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'katakana' / 'ctranslate2_released'))
     bento_net.pack("model_jpn", model)
     logger.info("packed japanese model")
     # pack korean model
-    model = ctranslate2.Translator(path / 'korean' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'korean' / 'ctranslate2_released'))
     bento_net.pack("model_kor", model)
     logger.info("packed korean model")
     # pack russian model
-    model = ctranslate2.Translator(path / 'russian' / 'ctranslate2_released')
+    model = ctranslate2.Translator(str(path / 'russian' / 'ctranslate2_released'))
     bento_net.pack("model_rus", model)
     logger.info("packed russian model")
     bento_net.save()
