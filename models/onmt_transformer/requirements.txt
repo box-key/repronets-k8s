@@ -2,3 +2,4 @@ OpenNMT-py==2.0.0
 ctranslate2==1.17.1
 flask==1.1.2
 flask_restful==0.3.8
+gunicorn==20.0.4

@@ -1,10 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 
-import ctranslate2
-
 import logging
-import pathlib
 
 
 logging.basicConfig(
@@ -27,9 +24,10 @@ class TransformerNETransliterator(Resource):
         return formatted_output
 
     def get(self):
-        language = request.form.get("language", "")
-        beam_size = int(request.form.get("beam", 0))
-        input_text = request.form.get("input", "")
+        language = request.args.get("language", "")
+        beam_size = int(request.args.get("beam", 0))
+        input_text = request.args.get("input", "")
+        logger.debug("query params = '{}'".format(request.args))
         if len(input_text) == 0:
             resp = {"status": 400, "message": "input is empty"}
             return resp
@@ -64,7 +62,9 @@ class TransformerNETransliterator(Resource):
         return resp
 
 
-def get_app():
+def create_app():
+    import ctranslate2
+    import pathlib
     path = pathlib.Path(__file__).absolute().parents[2] / 'model_store'
     logger.info("model directory path = '{}'".format(path))
     # start packing
@@ -96,6 +96,7 @@ def get_app():
     # init flask objects
     app = Flask(__name__)
     api = Api(app)
+    api.app.config['RESTFUL_JSON'] = {'ensure_ascii': False}
     api.add_resource(TransformerNETransliterator,
                      '/predict',
                      resource_class_kwargs={"net_models": net_models})

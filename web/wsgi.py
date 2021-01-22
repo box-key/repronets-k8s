@@ -71,7 +71,7 @@ def get_output(resp=None, language=None, bsize=None):
 def get_ps_output(language, beam_size, input_text):
     payload = {
         "language": language,
-        "beam_size": beam_size,
+        "beam": beam_size,
         "input": input_text
     }
     resp = requests.get(PS_ROUTE, params=payload)
@@ -82,10 +82,10 @@ def get_ps_output(language, beam_size, input_text):
 def get_ts_output(language, beam_size, input_text):
     payload = {
         "language": language,
-        "beam_size": beam_size,
+        "beam": beam_size,
         "input": input_text
     }
-    resp = requests.post(TS_ROUTE, data=json.dumps(payload))
+    resp = requests.get(TS_ROUTE, params=payload)
     logger.debug(resp.content)
     return resp.json()
 
