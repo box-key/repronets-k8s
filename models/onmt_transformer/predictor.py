@@ -1,7 +1,5 @@
-import bentoml as bento
-from bentoml.frameworks.pytorch import PytorchModelArtifact
-from bentoml.service.artifacts.common import PickleArtifact
-from bentoml.adapters import JsonInput, JsonOutput
+from flask import Flask, request
+from flask_restful import Resource, Api
 
 import ctranslate2
 
@@ -9,16 +7,17 @@ import logging
 import pathlib
 
 
-@bento.env(requirements_txt_file='requirements.txt')
-@bento.artifacts([
-    PickleArtifact('model_ara'),
-    PickleArtifact('model_chi'),
-    PickleArtifact('model_heb'),
-    PickleArtifact('model_jpn'),
-    PickleArtifact('model_kor'),
-    PickleArtifact('model_rus')
-])
-class BentoNETransliterator(bento.BentoService):
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
+
+
+class TransformerNETransliterator(Resource):
+
+    def __init__(self, **kwargs):
+        self.net_models = kwargs['net_models']
 
     def format_output(self, output):
         formatted_output = {}
@@ -27,11 +26,10 @@ class BentoNETransliterator(bento.BentoService):
             formatted_output[key] = ''.join(pred['tokens'])
         return formatted_output
 
-    @bento.api(input=JsonInput(), output=JsonOutput(), batch=False)
-    def predict(self, json_obj):
-        language = json_obj.get("language", "")
-        beam_size = int(json_obj.get("beam", 0))
-        input_text = json_obj.get("input", "")
+    def get(self):
+        language = request.form.get("language", "")
+        beam_size = int(request.form.get("beam", 0))
+        input_text = request.form.get("input", "")
         if len(input_text) == 0:
             resp = {"status": 400, "message": "input is empty"}
             return resp
@@ -45,24 +43,14 @@ class BentoNETransliterator(bento.BentoService):
         # lower text and remove white space
         input_text = input_text.lower().replace(" ", "")
         # get model depending on language
-        if language == "ara":
-            translator = self.artifacts.model_ara
-        elif language == "chi":
-            translator = self.artifacts.model_chi
-        elif language == "heb":
-            translator = self.artifacts.model_heb
-        elif language == "jpn":
-            translator = self.artifacts.model_jpn
-        elif language == "kor":
-            translator = self.artifacts.model_kor
-        elif language == "rus":
-            translator = self.artifacts.model_rus
-        else:
+        if language not in self.net_models:
             resp = {
                 "status": 400,
                 "message": "language = '{}' is not supported".format(language)
             }
             return resp
+        else:
+            translator = self.net_models[language]
         # get prediction
         prediction = translator.translate_batch([list(input_text)],
                                                 beam_size=beam_size,
@@ -76,42 +64,39 @@ class BentoNETransliterator(bento.BentoService):
         return resp
 
 
-def pack_model():
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-        level=logging.DEBUG
-    )
-    logger = logging.getLogger(__name__)
+def get_app():
     path = pathlib.Path(__file__).absolute().parents[2] / 'model_store'
-    logger.debug("model directory path = '{}'".format(path))
+    logger.info("model directory path = '{}'".format(path))
     # start packing
-    bento_net = BentoNETransliterator()
+    net_models = {}
     # pack arabic model
-    model = ctranslate2.Translator(str(path / 'arabic' / 'ctranslate2_released'))
-    bento_net.pack("model_ara", model)
+    model_ara = ctranslate2.Translator(str(path / 'arabic' / 'ctranslate2_released'))
+    net_models["ara"] = model_ara
     logger.info("packed arabic model")
     # pack chiense model
-    model = ctranslate2.Translator(str(path / 'chinese' / 'ctranslate2_released'))
-    bento_net.pack("model_chi", model)
+    model_chi = ctranslate2.Translator(str(path / 'chinese' / 'ctranslate2_released'))
+    net_models["chi"] = model_chi
     logger.info("packed chinese model")
     # pack hebrew model
-    model = ctranslate2.Translator(str(path / 'hebrew' / 'ctranslate2_released'))
-    bento_net.pack("model_heb", model)
+    model_heb = ctranslate2.Translator(str(path / 'hebrew' / 'ctranslate2_released'))
+    net_models["heb"] = model_heb
     logger.info("packed hebrew model")
     # pack japanese model
-    model = ctranslate2.Translator(str(path / 'katakana' / 'ctranslate2_released'))
-    bento_net.pack("model_jpn", model)
+    model_jpn = ctranslate2.Translator(str(path / 'katakana' / 'ctranslate2_released'))
+    net_models["jpn"] = model_jpn
     logger.info("packed japanese model")
     # pack korean model
-    model = ctranslate2.Translator(str(path / 'korean' / 'ctranslate2_released'))
-    bento_net.pack("model_kor", model)
+    model_kor = ctranslate2.Translator(str(path / 'korean' / 'ctranslate2_released'))
+    net_models["kor"] = model_kor
     logger.info("packed korean model")
     # pack russian model
-    model = ctranslate2.Translator(str(path / 'russian' / 'ctranslate2_released'))
-    bento_net.pack("model_rus", model)
+    model_rus = ctranslate2.Translator(str(path / 'russian' / 'ctranslate2_released'))
+    net_models["rus"] = model_rus
     logger.info("packed russian model")
-    bento_net.save()
-
-
-if __name__ == "__main__":
-    pack_model()
+    # init flask objects
+    app = Flask(__name__)
+    api = Api(app)
+    api.add_resource(TransformerNETransliterator,
+                     '/predict',
+                     resource_class_kwargs={"net_models": net_models})
+    return app
