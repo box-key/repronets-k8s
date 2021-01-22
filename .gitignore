@@ -44,3 +44,7 @@ ctranslate2_released/
 
 # sensitive files
 *_sensitive*
+
+
+# compiled phonetisaurus file
+*.so

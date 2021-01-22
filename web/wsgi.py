@@ -46,8 +46,14 @@ def get_table_items(ps_resp, ts_resp, beam_size):
     ranks = ["No.{}".format(i + 1) for i in range(beam_size)]
     for rank in ranks:
         item = {}
-        item["ps_prediction"] = ps_resp["data"][rank]
-        item["ts_prediction"] = ts_resp["data"][rank]
+        # get ps output
+        ps_token = ps_resp["data"][rank]["tokens"]
+        ps_prob = ps_resp["data"][rank]["prob"]
+        item["ps_prediction"] = "{} ({})".format(ps_token, ps_prob)
+        # get ts output
+        ts_token = ts_resp["data"][rank]["tokens"]
+        ts_prob = ts_resp["data"][rank]["prob"]
+        item["ts_prediction"] = "{} ({})".format(ps_token, ps_prob)
         item["rank"] = rank
         items.append(item)
     return items

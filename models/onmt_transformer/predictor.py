@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 
 import logging
+import math
 
 
 logging.basicConfig(
@@ -20,7 +21,12 @@ class TransformerNETransliterator(Resource):
         formatted_output = {}
         for i, pred in enumerate(output, start=1):
             key = "No.{}".format(i)
-            formatted_output[key] = ''.join(pred['tokens'])
+            tokens = "".join(pred['tokens'])
+            seq_prob = math.exp(pred['score'])
+            formatted_output[key] = {
+                "prob": seq_prob,
+                "tokens": tokens
+            }
         return formatted_output
 
     def get(self):
@@ -53,7 +59,7 @@ class TransformerNETransliterator(Resource):
         prediction = translator.translate_batch([list(input_text)],
                                                 beam_size=beam_size,
                                                 num_hypotheses=beam_size,
-                                                return_scores=False)
+                                                return_scores=True)
         resp = {
             "data": self.format_output(prediction[0]),
             "status": 200,
@@ -70,27 +76,39 @@ def create_app():
     # start packing
     net_models = {}
     # pack arabic model
-    model_ara = ctranslate2.Translator(str(path / 'arabic' / 'ctranslate2_released'))
+    model_ara = ctranslate2.Translator(
+        str(path / 'arabic' / 'ctranslate2_released')
+    )
     net_models["ara"] = model_ara
     logger.info("packed arabic model")
     # pack chiense model
-    model_chi = ctranslate2.Translator(str(path / 'chinese' / 'ctranslate2_released'))
+    model_chi = ctranslate2.Translator(
+        str(path / 'chinese' / 'ctranslate2_released')
+    )
     net_models["chi"] = model_chi
     logger.info("packed chinese model")
     # pack hebrew model
-    model_heb = ctranslate2.Translator(str(path / 'hebrew' / 'ctranslate2_released'))
+    model_heb = ctranslate2.Translator(
+        str(path / 'hebrew' / 'ctranslate2_released')
+    )
     net_models["heb"] = model_heb
     logger.info("packed hebrew model")
     # pack japanese model
-    model_jpn = ctranslate2.Translator(str(path / 'katakana' / 'ctranslate2_released'))
+    model_jpn = ctranslate2.Translator(
+        str(path / 'katakana' / 'ctranslate2_released')
+    )
     net_models["jpn"] = model_jpn
     logger.info("packed japanese model")
     # pack korean model
-    model_kor = ctranslate2.Translator(str(path / 'korean' / 'ctranslate2_released'))
+    model_kor = ctranslate2.Translator(
+        str(path / 'korean' / 'ctranslate2_released')
+    )
     net_models["kor"] = model_kor
     logger.info("packed korean model")
     # pack russian model
-    model_rus = ctranslate2.Translator(str(path / 'russian' / 'ctranslate2_released'))
+    model_rus = ctranslate2.Translator(
+        str(path / 'russian' / 'ctranslate2_released')
+    )
     net_models["rus"] = model_rus
     logger.info("packed russian model")
     # init flask objects

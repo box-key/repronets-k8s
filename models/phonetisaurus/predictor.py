@@ -1,78 +1,124 @@
-from flask import Flask, render_template, request
+from flask import Flask, request
+from flask_restful import Resource, Api
 
-import os
-import requests
-import subprocess
-import re
-import json
+import logging
+import math
 
 
-app = Flask(__name__)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
 
-def get_output(language, input_text, beam_size):
-    cmd = "phonetisaurus predict --nbest {} --model model_store/{}_ps_1/model.fst {}"
-    res = subprocess.check_output([cmd.format(beam_size, language, input_text)],
-                                  shell=True)
-    output = []
-    for pred in res.decode('utf-8').split('\n')[:-1]:
-        output.append(''.join(pred.split()[1:]))
-    return format_output(output)
+class PhonetisaurusNETransliterator(Resource):
 
+    def __init__(self, **kwargs):
+        self.net_models = kwargs['net_models']
 
-def format_output(output):
-    formatted_output = {}
-    for i, pred in enumerate(output, start=1):
-        key = "No.{}".format(i)
-        formatted_output[key] = pred
-    return formatted_output
+    def format_output(output):
+        formatted_output = {}
+        for i, pred in enumerate(output, start=1):
+            key = "No.{}".format(i)
+            tokens = ''.join([c for c in pred.Uniques])
+            seq_prob = math.exp(-pred.PathWeights)
+            formatted_output[key] = {
+                "prob": seq_prob,
+                "tokens": tokens
+            }
+        return formatted_output
 
-
-@app.route('/', methods=["GET"])
-def test():
-    return 'Hello world'
-
-
-@app.route('/predict', methods=["GET"])
-def index():
-    language = request.args.get("language", "")
-    beam_size = int(request.args.get("beam", 0))
-    input_text = request.args.get("input", "")
-    if len(input_text) == 0:
-        resp = {"status": 400, "message": "input is empty"}
-        return json.dumps(resp)
-    elif beam_size <= 0:
+    def get(self):
+        language = request.args.get("language", "")
+        beam_size = int(request.args.get("beam", 0))
+        input_text = request.args.get("input", "")
+        if len(input_text) == 0:
+            resp = {"status": 400, "message": "input is empty"}
+            return resp
+        elif beam_size <= 0:
+            resp = {
+                "status": 400,
+                "message": ("Beam size must be grater than 0, instead "
+                            "received = '{}'".format(beam_size))
+            }
+            return resp
+        # lower text and remove white space
+        input_text = input_text.lower().replace(" ", "")
+        # call phonetisaurus to get prediction
+        # get model depending on language
+        if language not in self.net_models:
+            resp = {
+                "status": 400,
+                "message": "language = '{}' is not supported".format(language)
+            }
+            return resp
+        else:
+            translator = self.net_models[language]
+        prediction = translator.Phoneticize(word=input_text,
+                                            nbest=beam_size,
+                                            beam=beam_size*10,
+                                            threshold=99,
+                                            write_fsts=False,
+                                            accumulate=False,
+                                            pmass=99)
+        # format output
         resp = {
-            "status": 400,
-            "message": ("Beam size must be grater than 0, instead "
-                        "received = '{}'".format(beam_size))
+            "data": self.format_output(prediction),
+            "status": 200,
+            "message": "Successfully made predictions"
         }
-        return json.dumps(resp)
-    # lower text and remove white space
-    input_text = input_text.lower().replace(" ", "")
-    # call phonetisaurus to get prediction
-    if language == "jpn":
-        output = get_output("katakana", input_text, beam_size)
-    elif language == "kor":
-        output = get_output("korean", input_text, beam_size)
-    elif language == "chi":
-        output = get_output("chinese", input_text, beam_size)
-    elif language == "ara":
-        output = get_output("arabic", input_text, beam_size)
-    elif language == "heb":
-        output = get_output("hebrew", input_text, beam_size)
-    elif language == "rus":
-        output = get_output("russian", input_text, beam_size)
-    else:
-        resp = {
-            "status": 400,
-            "message": "input language = '{}' doesn't exist".format(language)
-        }
-        return json.dumps(resp)
-    # format output
-    resp = {
-        "data": output,
-        "status": 200,
-        "message": "Successfully made predictions"
-    }
-    return json.dumps(resp, ensure_ascii=False)
+        return resp
+
+
+def create_app():
+    import phonetisaurus
+    import pathlib
+    path = pathlib.Path(__file__).absolute().parents[2] / 'model_store'
+    logger.info("model directory path = '{}'".format(path))
+    # start packing
+    net_models = {}
+    # pack arabic model
+    model_ara = phonetisaurus.Phonetisaurus(
+        str(path / 'arabic_ps_1' / 'model.fst')
+    )
+    net_models["ara"] = model_ara
+    logger.info("packed arabic model")
+    # pack chiense model
+    model_chi = phonetisaurus.Phonetisaurus(
+        str(path / 'chinese_ps_1' / 'model.fst')
+    )
+    net_models["chi"] = model_chi
+    logger.info("packed chinese model")
+    # pack hebrew model
+    model_heb = phonetisaurus.Phonetisaurus(
+        str(path / 'hebrew_ps_1' / 'model.fst')
+    )
+    net_models["heb"] = model_heb
+    logger.info("packed hebrew model")
+    # pack japanese model
+    model_jpn = phonetisaurus.Phonetisaurus(
+        str(path / 'katakana_ps_1' / 'model.fst')
+    )
+    net_models["jpn"] = model_jpn
+    logger.info("packed japanese model")
+    # pack korean model
+    model_kor = phonetisaurus.Phonetisaurus(
+        str(path / 'korean_ps_1' / 'model.fst')
+    )
+    net_models["kor"] = model_kor
+    logger.info("packed korean model")
+    # pack russian model
+    model_rus = phonetisaurus.Phonetisaurus(
+        str(path / 'russian_ps_1' / 'model.fst')
+    )
+    net_models["rus"] = model_rus
+    logger.info("packed russian model")
+    # init flask objects
+    app = Flask(__name__)
+    api = Api(app)
+    api.app.config['RESTFUL_JSON'] = {'ensure_ascii': False}
+    api.add_resource(PhonetisaurusNETransliterator,
+                     '/predict',
+                     resource_class_kwargs={"net_models": net_models})
+    return app

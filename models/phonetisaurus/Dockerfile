@@ -12,9 +12,9 @@ COPY model_store/russian_ps_1 /phonetisaurus/model_store/russian_ps_1
 
 # copy other files
 COPY models/phonetisaurus/requirements.txt /phonetisaurus/requirements.txt
-COPY models/phonetisaurus/predictor.py /phonetisaurus/predictor.py
+COPY models/phonetisaurus/predictor.py /phonetisaurus/models/phonetisaurus/predictor.py
+COPY models/phonetisaurus/wsgi.py /transformer/models/phonetisaurus/wsgi.py
 COPY models/phonetisaurus/docker-entrypoint.sh  /usr/local/bin/docker-entrypoint.sh
-COPY phonetisaurus-0.3.0-py3-none-manylinux1_x86_64.whl /phonetisaurus/phonetisaurus-0.3.0-py3-none-manylinux1_x86_64.whl
 
 # install phonetisaurus
 # source: https://github.com/AdolfVonKleist/Phonetisaurus
@@ -66,11 +66,9 @@ RUN git clone https://github.com/mitlm/mitlm.git && \
 
 # install python dependencies
 RUN pip3 install -r /phonetisaurus/requirements.txt
-# install package from source (there is a package with the same name on pypi)
-# link: https://pypi.org/project/phonetisaurus/#files
-RUN pip3 install /phonetisaurus/phonetisaurus-0.3.0-py3-none-manylinux1_x86_64.whl --force-reinstall
+# copy compiled code into model directory
+RUN cp /Phonetisaurus/.libs/Phonetisaurus.so /phonetisaurus/models/phonetisaurus/Phonetisaurus.so
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
-
