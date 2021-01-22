@@ -40,3 +40,7 @@ opennmt/
 
 # ctranslate2 models
 ctranslate2_released/
+
+
+# sensitive files
+*_sensitive*

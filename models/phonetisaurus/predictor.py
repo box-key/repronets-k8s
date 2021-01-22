@@ -73,6 +73,6 @@ def index():
     resp = {
         "data": output,
         "status": 200,
-        "message": "Successfully make predictions"
+        "message": "Successfully made predictions"
     }
     return json.dumps(resp, ensure_ascii=False)
