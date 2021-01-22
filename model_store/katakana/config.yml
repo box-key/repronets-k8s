@@ -1,6 +1,6 @@
 model_name: net-transofrmer
-model_params: {dropout: 0.2, hid_dim: 256, input_dim: 163, max_seq_len: 64, n_heads: 2,
-  n_layers: 4, output_dim: 106, pf_dim: 64, src_pad_idx: 1, trg_pad_idx: 1}
-train_params: {batch_size: 128, checkpoint: 1, clip: 1.0, device_type: cuda, epochs: 30,
-  loss: CrossEntropyLoss, lr: 0.0005, optim: Adam, train_path: /content/drive/MyDrive/Colab_Notebooks/NETransliterate/datasets/wd_katakana_64.f12,
+model_params: {dropout: 0.5, hid_dim: 256, input_dim: 163, max_seq_len: 32, n_heads: 2,
+  n_layers: 2, output_dim: 106, pf_dim: 32, src_pad_idx: 1, trg_pad_idx: 1}
+train_params: {batch_size: 256, checkpoint: 1, clip: 1.0, device_type: cuda, epochs: 200,
+  loss: CrossEntropyLoss, lr: 0.0003, optim: Adam, train_path: /content/drive/MyDrive/Colab_Notebooks/NETransliterate/datasets/wd_katakana_64.f12,
   val_path: /content/drive/MyDrive/Colab_Notebooks/NETransliterate/datasets/wd_katakana_16.f12}

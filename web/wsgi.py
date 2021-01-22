@@ -10,15 +10,16 @@ import logging
 app = Flask(__name__)
 
 
-LANGUAGES = [
-    "arabic",
-    "chinese",
-    "hebrew",
-    "japanese",
-    "korean",
-    "russian"
-]
-LAN_LOOKUP = set(LANGUAGES)
+LANGUAGE_MAPPER = {
+    "Arabic": "ara",
+    "Chinese": "chi",
+    "Hebrew": "heb",
+    "Japanese": "jpn",
+    "Korean": "kor",
+    "Russian": "rus"
+}
+LAN_LOOKUP = set([lan for lan in LANGUAGE_MAPPER.values()])
+INPUT_LANGUAGES = [lan for lan in LANGUAGE_MAPPER.keys()]
 MODELS = ["Phonetisaurus", "Transformer"]
 MODEL_LOOKUP = set([x.lower() for x in MODELS])
 BEAM_SIZE = [1, 2, 3, 4, 5]
@@ -55,11 +56,11 @@ def get_table_items(ps_resp, ts_resp, beam_size):
 def get_output(resp=None, language=None, bsize=None):
     # if inputs are None, returns default page
     if resp is None and language is None and bsize is None:
-        language = LANGUAGES[0]
+        language = INPUT_LANGUAGES[0]
         bsize = BEAM_SIZE[0]
         resp = None
     return render_template('index.html',
-                            languages=LANGUAGES,
+                            languages=INPUT_LANGUAGES,
                             beam_size=BEAM_SIZE,
                             selected_lan=language,
                             selected_bsize=bsize,
@@ -70,20 +71,21 @@ def get_output(resp=None, language=None, bsize=None):
 def get_ps_output(language, beam_size, input_text):
     payload = {
         "language": language,
-        "beam_size": beam_size,
+        "beam": beam_size,
         "input": input_text
     }
     resp = requests.get(PS_ROUTE, params=payload)
+    logger.debug(resp.content)
     return resp.json()
 
 
 def get_ts_output(language, beam_size, input_text):
     payload = {
         "language": language,
-        "beam_size": beam_size,
+        "beam": beam_size,
         "input": input_text
     }
-    resp = requests.post(TS_ROUTE, data=json.dumps(payload))
+    resp = requests.get(TS_ROUTE, params=payload)
     logger.debug(resp.content)
     return resp.json()
 
@@ -91,7 +93,8 @@ def get_ts_output(language, beam_size, input_text):
 @app.route('/', methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        language = request.form.get("language", "")
+        selected_language = request.form.get("language", "")
+        language = LANGUAGE_MAPPER[selected_language]
         beam_size = int(request.form.get("beam_size", 1))
         input_text = request.form.get("input_text", "")
         logger.debug("inputs = '{}'".format(request.form))
@@ -99,19 +102,17 @@ def index():
         ps_resp = get_ps_output(language, beam_size, input_text)
         if ps_resp['status'] == 400:
             return get_output(resp={"error": ps_resp['message']})
-        logger.debug("output from phonetisaurus = '{}'".format(ps_resp))
         # get transformer output
         ts_resp = get_ts_output(language, beam_size, input_text)
         if ts_resp['status'] == 400:
             return get_output(resp={"error": ts_resp['message']})
-        logger.debug("output from transformer = '{}'".format(ts_resp))
         items = get_table_items(ps_resp, ts_resp, beam_size)
         resp = {
             "model_names": MODELS,
             "table": OutputTable(items)
         }
         return get_output(resp=resp,
-                          language=language,
+                          language=selected_language,
                           bsize=beam_size)
     return get_output()
 
@@ -120,28 +121,37 @@ def index():
 def predict():
     language = request.args.get("language", "")
     input_text = request.args.get("input", "")
-    model_type = request.args.get("model_type", "")
+    model_type = request.args.get("model", "")
     # 400 if receive non integer value
     try:
-        beam_size = int(request.args.get("beam_size", 1))
+        beam_size = int(request.args.get("beam", 0))
     except ValueError:
         resp = {
             "status": 400,
-            "message": ("'beam_size' must be a positive integer, instead "
+            "message": ("ILLEGAL INPUT: 'beam_size' must be from 1 to 5, instead "
                         "received '{}'".format(request.args.get("beam_size")))
         }
         return json.dumps(resp)
+    # 400 if receive non integer value
+    if (beam_size <= 0) or (beam_size > 5):
+        resp = {
+            "status": 400,
+            "message": ("VALUE ERROR: 'beam_size' must be from 1 to 5, instead "
+                        "received '{}'".format(beam_size))
+        }
+        return json.dumps(resp)
+    # chekc input and langauge
     if not isinstance(language, str) or not isinstance(input_text, str):
         resp = {
             "status": 400,
-            "message": "'langauge' and 'input_text' must be string."
+            "message": "ILLEGAL INPUT: 'langauge' and 'input' must be string."
         }
         return json.dumps(resp)
     if language not in LAN_LOOKUP:
         resp = {
             "status": 400,
-            "message": ("Currently '{}' options are available, instead "
-                        "received '{}'".format(LANGUAGES, language))
+            "message": ("VALUE ERROR: Currently '{}' language are available, "
+                        "instead received '{}'".format(LAN_LOOKUP, language))
         }
         return json.dumps(resp)
     # get inference

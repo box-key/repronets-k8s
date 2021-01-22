@@ -36,7 +36,7 @@ def test():
 @app.route('/predict', methods=["GET"])
 def index():
     language = request.args.get("language", "")
-    beam_size = int(request.args.get("beam_size", 0))
+    beam_size = int(request.args.get("beam", 0))
     input_text = request.args.get("input", "")
     if len(input_text) == 0:
         resp = {"status": 400, "message": "input is empty"}
@@ -51,17 +51,17 @@ def index():
     # lower text and remove white space
     input_text = input_text.lower().replace(" ", "")
     # call phonetisaurus to get prediction
-    if language == "japanese":
+    if language == "jpn":
         output = get_output("katakana", input_text, beam_size)
-    elif language == "korean":
+    elif language == "kor":
         output = get_output("korean", input_text, beam_size)
-    elif language == "chinese":
+    elif language == "chi":
         output = get_output("chinese", input_text, beam_size)
-    elif language == "arabic":
+    elif language == "ara":
         output = get_output("arabic", input_text, beam_size)
-    elif language == "hebrew":
+    elif language == "heb":
         output = get_output("hebrew", input_text, beam_size)
-    elif language == "russian":
+    elif language == "rus":
         output = get_output("russian", input_text, beam_size)
     else:
         resp = {
@@ -73,6 +73,6 @@ def index():
     resp = {
         "data": output,
         "status": 200,
-        "message": "Successfully make predictions"
+        "message": "Successfully made predictions"
     }
     return json.dumps(resp, ensure_ascii=False)
