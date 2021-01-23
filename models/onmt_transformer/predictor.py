@@ -24,7 +24,7 @@ class TransformerNETransliterator(Resource):
             tokens = "".join(pred['tokens'])
             seq_prob = math.exp(pred['score'])
             formatted_output[key] = {
-                "prob": seq_prob,
+                "prob": round(seq_prob, 10),
                 "tokens": tokens
             }
         return formatted_output

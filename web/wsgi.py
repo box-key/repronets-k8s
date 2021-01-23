@@ -53,7 +53,7 @@ def get_table_items(ps_resp, ts_resp, beam_size):
         # get ts output
         ts_token = ts_resp["data"][rank]["tokens"]
         ts_prob = ts_resp["data"][rank]["prob"]
-        item["ts_prediction"] = "{} ({})".format(ps_token, ps_prob)
+        item["ts_prediction"] = "{} ({})".format(ts_token, ts_prob)
         item["rank"] = rank
         items.append(item)
     return items
