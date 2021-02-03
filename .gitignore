@@ -49,3 +49,6 @@ ctranslate2_released/
 
 # compiled phonetisaurus file
 *.so
+
+# nodejs files
+node_modules/
