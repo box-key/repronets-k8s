@@ -36,6 +36,7 @@ venv/
 
 # opennmt folder
 opennmt/
+model_store/**/production_*/
 
 
 # ctranslate2 models
