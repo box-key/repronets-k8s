@@ -156,8 +156,15 @@ def predict():
     if language not in LAN_LOOKUP:
         resp = {
             "status": 400,
-            "message": ("VALUE ERROR: Currently '{}' language are available, "
+            "message": ("ILLEGAL INPUT: Currently '{}' language are available, "
                         "instead received '{}'".format(LAN_LOOKUP, language))
+        }
+        return json.dumps(resp)
+    if len(input_text) > 36:
+        resp = {
+            "status": 400,
+            "message": ("ILLEGAL INPUT: 'input' word must consist of less than "
+                        "37 characters")
         }
         return json.dumps(resp)
     # get inference

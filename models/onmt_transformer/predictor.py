@@ -44,6 +44,13 @@ class TransformerNETransliterator(Resource):
                             "received = '{}'".format(beam_size))
             }
             return resp
+        if len(input_text) > 36:
+            resp = {
+                "status": 400,
+                "message": ("ILLEGAL INPUT: 'input' word must consist of "
+                            "less than 37 characters")
+            }
+            return resp
         # lower text and remove white space
         input_text = input_text.lower().replace(" ", "")
         # get model depending on language

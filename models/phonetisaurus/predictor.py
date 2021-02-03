@@ -36,6 +36,13 @@ class PhonetisaurusNETransliterator(Resource):
         if len(input_text) == 0:
             resp = {"status": 400, "message": "input is empty"}
             return resp
+        if len(input_text) > 36:
+            resp = {
+                "status": 400,
+                "message": ("ILLEGAL INPUT: 'input' word must consist of less than "
+                            "37 characters")
+            }
+            return resp
         elif beam_size <= 0:
             resp = {
                 "status": 400,
