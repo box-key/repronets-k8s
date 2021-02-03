@@ -17,14 +17,14 @@ class PhonetisaurusNETransliterator(Resource):
     def __init__(self, **kwargs):
         self.net_models = kwargs['net_models']
 
-    def format_output(output):
+    def format_output(self, model, output):
         formatted_output = {}
         for i, pred in enumerate(output, start=1):
             key = "No.{}".format(i)
-            tokens = ''.join([c for c in pred.Uniques])
-            seq_prob = math.exp(-pred.PathWeights)
+            tokens = ''.join([model.FindOsym(c) for c in pred.Uniques])
+            seq_prob = math.exp(-pred.PathWeight)
             formatted_output[key] = {
-                "prob": seq_prob,
+                "prob": round(seq_prob, 10),
                 "tokens": tokens
             }
         return formatted_output
@@ -33,6 +33,7 @@ class PhonetisaurusNETransliterator(Resource):
         language = request.args.get("language", "")
         beam_size = int(request.args.get("beam", 0))
         input_text = request.args.get("input", "")
+        logger.info("input params = '{}'".format(request.args))
         if len(input_text) == 0:
             resp = {"status": 400, "message": "input is empty"}
             return resp
@@ -64,14 +65,14 @@ class PhonetisaurusNETransliterator(Resource):
             translator = self.net_models[language]
         prediction = translator.Phoneticize(word=input_text,
                                             nbest=beam_size,
-                                            beam=beam_size*10,
-                                            threshold=99,
+                                            beam=beam_size*20,
                                             write_fsts=False,
                                             accumulate=False,
+                                            threshold=99,
                                             pmass=99)
         # format output
         resp = {
-            "data": self.format_output(prediction),
+            "data": self.format_output(translator, prediction),
             "status": 200,
             "message": "Successfully made predictions"
         }

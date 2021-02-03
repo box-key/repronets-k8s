@@ -13,7 +13,7 @@ COPY model_store/russian_ps_1 /phonetisaurus/model_store/russian_ps_1
 # copy other files
 COPY models/phonetisaurus/requirements.txt /phonetisaurus/requirements.txt
 COPY models/phonetisaurus/predictor.py /phonetisaurus/models/phonetisaurus/predictor.py
-COPY models/phonetisaurus/wsgi.py /transformer/models/phonetisaurus/wsgi.py
+COPY models/phonetisaurus/wsgi.py /phonetisaurus/models/phonetisaurus/wsgi.py
 COPY models/phonetisaurus/docker-entrypoint.sh  /usr/local/bin/docker-entrypoint.sh
 
 # install phonetisaurus
@@ -29,7 +29,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     gfortran \
     wget \
-    tar
+    tar \
+    gawk
 
 RUN cd /phonetisaurus
 
@@ -40,9 +41,8 @@ RUN wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.6.2.tar.gz &
     ./configure --enable-static --enable-shared --enable-far --enable-ngram-fsts && \
     make -j 4 && \
     make install && \
+    ldconfig && \
     cd
-
-RUN pip3 install pybindgen
 
 # compile with python3 bindings
 RUN git clone https://github.com/AdolfVonKleist/Phonetisaurus.git && \
@@ -67,8 +67,14 @@ RUN git clone https://github.com/mitlm/mitlm.git && \
 # install python dependencies
 RUN pip3 install -r /phonetisaurus/requirements.txt
 # copy compiled code into model directory
-RUN cp /Phonetisaurus/.libs/Phonetisaurus.so /phonetisaurus/models/phonetisaurus/Phonetisaurus.so
+#RUN cp /phonetisaurus/Phonetisaurus/.libs/Phonetisaurus.so /phonetisaurus/models/phonetisaurus/Phonetisaurus.so
+RUN cp /phonetisaurus/Phonetisaurus/.libs/Phonetisaurus.so /phonetisaurus/Phonetisaurus.so
+RUN cp /phonetisaurus/Phonetisaurus/python /phonetisaurus/python -r
+
+# check installation
+RUN phonetisaurus-apply --help
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT [ "docker-entrypoint.sh" ]
+
