@@ -1,6 +1,6 @@
-export default {
+module.exports = {
 
-  port: parseInt(process.env.PORT, 3000)
+  port: 3000,
 
   logs: {
     level: "debug",
@@ -9,3 +9,4 @@ export default {
     }
   }
 }
+
