@@ -18,7 +18,8 @@ router.get('/', async function(req, res) {
     logger.info(`output = ${JSON.stringify(output)}`);
     res.json(output).status(200);
   } else if (model == 'transformer') {
-    let output = transformer(input, language, beam);
+    let output = await transformer(input, language, beam);
+    logger.info(`output = ${JSON.stringify(output)}`);
     res.json(output).status(200);
   } else if (model == 'all') {
     let output = all(input, language, beam);
