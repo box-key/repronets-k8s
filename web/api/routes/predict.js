@@ -5,7 +5,7 @@ const all = require('../../services/predictor/all');
 const express = require('express');
 const router = express.Router();
 
-router.get('/', function(req, res) {
+router.get('/', async function(req, res) {
   let input = req.query.input;
   let language = req.query.language;
   let model = req.query.model;
@@ -14,7 +14,8 @@ router.get('/', function(req, res) {
   if (input == undefined) {
     res.send('Bad boy!')
   } else if (model == 'phonetisaurus') {
-    let output = phonetisaurus(input, language, beam);
+    let output = await phonetisaurus(input, language, beam);
+    logger.info(`output = ${JSON.stringify(output)}`);
     res.json(output).status(200);
   } else if (model == 'transformer') {
     let output = transformer(input, language, beam);
