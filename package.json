@@ -1,5 +1,5 @@
 {
-  "name": "net-app",
+  "name": "repronets",
   "version": "1.0.0",
   "description": "Named Entity Transliteartion App",
   "main": "app.js",
@@ -8,16 +8,16 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_ENV=development node ./web/app"
+    "start": "cross-env NODE_ENV=development node ./web/app"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/box-key/ReproNETs.git"
   },
   "keywords": [
-    "machine",
-    "learning",
-    "nlp"
+    "machine learning",
+    "nlp",
+    "named entity transliteration"
   ],
   "author": "Kei Nemoto",
   "license": "Apache-2.0",
@@ -26,7 +26,10 @@
   },
   "homepage": "https://github.com/box-key/ReproNETs#readme",
   "dependencies": {
+    "axios": "^0.21.1",
+    "cross-env": "^7.0.3",
     "express": "^4.17.1",
+    "path": "^0.12.7",
     "winston": "^3.3.3"
   }
 }

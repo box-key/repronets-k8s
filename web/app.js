@@ -1,15 +1,22 @@
 const express = require('express');
-const logger = require('./loaders/logger');
+const logger = require('./loaders/logger')(module);
 const config = require('./config');
+const predict_router = require('./api/routes/predict');
+const bodyParser = require('body-parser')
 
 async function startServer() {
   const app = express();
+  app.use(bodyParser.urlencoded({ extended: false }))
+  app.use(bodyParser.json())
 
   app.get('/', (req, res) => res.send('Hello World!'))
+
+  app.use('/predict', predict_router)
+
   app.listen(config.port, () => {
-    logger.info(`
+    console.log(`
       #############################################
-         Server listening on port: ${config.port} 
+         Server listening on port: ${config.port}
       #############################################
     `);
   }).on('error', err => {

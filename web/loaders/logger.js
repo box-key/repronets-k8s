@@ -1,33 +1,29 @@
 const config = require('../config');
 const winston = require('winston');
+const { combine, timestamp, label, printf } = winston.format;
+const path = require('path');
 
-const transports = [];
-if(process.env.NODE_ENV !== 'development') {
-  transports.push(
-    new winston.transports.Console()
-  )
-} else {
-  transports.push(
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.cli(),
-        winston.format.splat(),
-      )
-    })
-  )
-}
-
-module.exports = winston.createLogger({
-  level: config.logs.level,
-  levels: winston.config.npm.levels,
-  format: winston.format.combine(
-    winston.format.timestamp({
-      format: config.logs.format.time
-    }),
-    winston.format.errors({ stack: true }),
-    winston.format.splat(),
-    winston.format.json()
-  ),
-  transports
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `[${timestamp} ${label} ${level.toUpperCase()}] ${message}`;
 });
 
+const getLabel = function(callingModule) {
+  const parts = callingModule.filename.split(path.sep);
+  return path.join(parts[parts.length - 2], parts.pop());
+};
+
+module.exports = function(callingModule) {
+  return winston.createLogger({
+    level: config.logs.level,
+    levels: winston.config.npm.levels,
+    format: combine(
+      label({ label: getLabel(callingModule)}),
+      timestamp({
+        format: config.logs.format.time
+      }),
+      winston.format.splat(),
+      myFormat,
+    ),
+    transports: [new winston.transports.Console()]
+  });
+};
