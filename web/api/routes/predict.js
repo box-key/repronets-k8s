@@ -23,6 +23,7 @@ router.get('/', async function(req, res) {
     res.json(output).status(200);
   } else if (model == 'all') {
     let output = all(input, language, beam);
+    logger.info(`output = ${JSON.stringify(output)}`);
     res.json(output).status(200);
   } else {
     res.send('No Model!')
