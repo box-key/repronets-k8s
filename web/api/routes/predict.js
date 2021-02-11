@@ -5,6 +5,9 @@ const router = express.Router();
 const {check, query, validationResult} = require('express-validator');
 
 module.exports = () => {
+  /*
+   * Define sets to check input values
+   */
   let supportedLangs = new Set([
     'ara',
     'chi',
@@ -18,6 +21,9 @@ module.exports = () => {
     'transformer',
     'all'
   ])
+  /*
+   * Define logic for this route
+   */
   router.get('/',[
     query('input', `Input must be a string less than 37 characters`)
       .notEmpty()
