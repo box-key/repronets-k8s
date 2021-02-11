@@ -15,19 +15,20 @@ module.exports = () => {
   ])
   let supportedModels = new Set([
     'phonetisaurus',
-    'transformer'
+    'transformer',
+    'all'
   ])
   router.get('/',[
     query('input', `Input must be a string less than 37 characters`)
       .notEmpty()
       .isString()
       .isLength({ min: 1, max: 36 }),
-    query('language', `Language must be a string. The list of supported langauges = ${supportedLangs}`)
+    query('language', `Language must be a string. The list of supported langauges = [${Array.from(supportedLangs)}]`)
       .notEmpty()
       .isString()
       .isLength({ min: 3, max: 3})
       .custom((language) => supportedLangs.has(language)),
-    query('model', `Model must be a string. The list of models = ${supportedModels}`)
+    query('model', `Model must be a string. The list of models = [${Array.from(supportedModels)}]`)
       .notEmpty()
       .isString()
       .custom((model) => supportedModels.has(model)),
@@ -35,7 +36,7 @@ module.exports = () => {
       .notEmpty()
       .isInt({ min: 1, max: 5 }),
   ],
-  function(req, res) {
+  async function(req, res) {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
       let input = req.query.input;
@@ -43,11 +44,12 @@ module.exports = () => {
       let model = req.query.model;
       let beam = req.query.beam;
       logger.info(`Request query = ${JSON.stringify(req.query)}`);
-      output = predictor(input, language, beam, model);
+      let output = await predictor(input, language, beam, model);
       logger.info(`output = ${JSON.stringify(output)}`);
       res.json(output);
     } else {
-      res.json(errors.array()).status(400);
+      res.json(errors.array()[0]).status(400);
     }
   });
+  return router
 };
