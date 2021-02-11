@@ -8,5 +8,11 @@ module.exports = async (input, language, beam) => {
     beam: beam
   };
   return axios.get('http://localhost:5001/predict', { params: params })
-    .catch((err) => { logger.error(err) });
+    .then((resp) => {
+      logger.debug(`ps outputs = ${JSON.stringify(resp.status)}`);
+      return resp.data;
+    })
+    .catch((err) => { 
+      logger.error(err) 
+    });
 };
