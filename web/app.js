@@ -1,7 +1,7 @@
 const express = require('express');
 const logger = require('./loaders/logger')(module);
 const config = require('./config');
-const predict_router = require('./api/routes/predict');
+const predict_route = require('./api/routes/predict');
 const bodyParser = require('body-parser')
 
 async function startServer() {
@@ -11,7 +11,7 @@ async function startServer() {
 
   app.get('/', (req, res) => res.send('Hello World!'))
 
-  app.use('/predict', predict_router)
+  app.use('/predict', predict_route())
 
   app.listen(config.port, () => {
     console.log(`

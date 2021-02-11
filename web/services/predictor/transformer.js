@@ -12,7 +12,11 @@ module.exports = async function(input, language, beam) {
       logger.debug(`ts outputs = ${JSON.stringify(resp.status)}`);
       return resp.data;
     })
-    .catch((err) => { 
-      logger.error(err) 
+    .catch((err) => {
+      logger.error(err);
+      return {
+      	resp: 500,
+      	message: err
+      };
     });
 };

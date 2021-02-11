@@ -1,33 +1,53 @@
 const logger = require('../../loaders/logger')(module);
-const phonetisaurus = require('../../services/predictor/phonetisaurus');
-const transformer = require('../../services/predictor/transformer');
-const all = require('../../services/predictor/all');
+const predictor = require('../../services/predictor');
 const express = require('express');
 const router = express.Router();
+const {check, query, validationResult} = require('express-validator');
 
-router.get('/', async function(req, res) {
-  let input = req.query.input;
-  let language = req.query.language;
-  let model = req.query.model;
-  let beam = req.query.beam;
-  logger.info(`Request body = ${JSON.stringify(req.query)}`);
-  if (input == undefined) {
-    res.send('Bad boy!')
-  } else if (model == 'phonetisaurus') {
-    let output = await phonetisaurus(input, language, beam);
-    logger.info(`output = ${JSON.stringify(output)}`);
-    res.json(output).status(200);
-  } else if (model == 'transformer') {
-    let output = await transformer(input, language, beam);
-    logger.info(`output = ${JSON.stringify(output)}`);
-    res.json(output).status(200);
-  } else if (model == 'all') {
-    let output = await all(input, language, beam);
-    logger.info(`output = ${JSON.stringify(output)}`);
-    res.json(output).status(200);
-  } else {
-    res.send('No Model!')
-  }
-});
-
-module.exports = router;
+module.exports = () => {
+  let supportedLangs = new Set([
+    'ara',
+    'chi',
+    'heb',
+    'jpn',
+    'kor',
+    'rus'
+  ])
+  let supportedModels = new Set([
+    'phonetisaurus',
+    'transformer'
+  ])
+  router.get('/',[
+    query('input', `Input must be a string less than 37 characters`)
+      .notEmpty()
+      .isString()
+      .isLength({ min: 1, max: 36 }),
+    query('language', `Language must be a string. The list of supported langauges = ${supportedLangs}`)
+      .notEmpty()
+      .isString()
+      .isLength({ min: 3, max: 3})
+      .custom((language) => supportedLangs.has(language)),
+    query('model', `Model must be a string. The list of models = ${supportedModels}`)
+      .notEmpty()
+      .isString()
+      .custom((model) => supportedModels.has(model)),
+    query('beam', `Beam must an integer from 1 to 5`)
+      .notEmpty()
+      .isInt({ min: 1, max: 5 }),
+  ],
+  function(req, res) {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      let input = req.query.input;
+      let language = req.query.language;
+      let model = req.query.model;
+      let beam = req.query.beam;
+      logger.info(`Request query = ${JSON.stringify(req.query)}`);
+      output = predictor(input, language, beam, model);
+      logger.info(`output = ${JSON.stringify(output)}`);
+      res.json(output);
+    } else {
+      res.json(errors.array()).status(400);
+    }
+  });
+};

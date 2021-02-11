@@ -27,16 +27,16 @@ module.exports = async function(input, language, beam) {
     .then(axios.spread((...responses) => {
       let model_outputs = {};
       for(i = 0; i < requests.length; i++){
-	model_outputs[modelNames[i]] = responses[i].data;
+        model_outputs[modelNames[i]] = responses[i].data;
+        logger.debug(`all (${modelNames[i]}) = ${JSON.stringify(responses[i].status)}`)
       };
-      logger.debug(`all outputs = ${JSON.stringify(model_outputs)}`);
       return model_outputs;
     }))
-    .catch((errors) => { 
+    .catch((errors) => {
       logger.error(errors);
       return {
-	resp: 500,
-	message: errors
+      	resp: 500,
+      	message: errors
       };
     });
 };
