@@ -7,12 +7,36 @@ module.exports = async function(input, language, beam) {
     language: language,
     beam: beam
   };
-  const psPrediction = axios.get('http://localhost:5001/predict', { params: params });
-  const tsPrediction = axios.get('http://localhost:5002/predict', { params: params });
+  const psPrediction = {
+    name: 'phonetisaurus',
+    request: axios.get('http://localhost:5001/predict', { params: params })
+  };
+  const tsPrediction = {
+    name: 'transformer',
+    request: axios.get('http://localhost:5002/predict', { params: params })
+  };
+  const modelNames = [
+    psPrediction['name'],
+    tsPrediction['name']
+  ];
   const requests = [
-    psPrediction,
-    tsPrediction
+    psPrediction['request'],
+    tsPrediction['request']
   ];
   return axios.all(requests)
-    .catch(errors => { logger.error(errors) });
+    .then(axios.spread((...responses) => {
+      let model_outputs = {};
+      for(i = 0; i < requests.length; i++){
+	model_outputs[modelNames[i]] = responses[i].data;
+      };
+      logger.debug(`all outputs = ${JSON.stringify(model_outputs)}`);
+      return model_outputs;
+    }))
+    .catch((errors) => { 
+      logger.error(errors);
+      return {
+	resp: 500,
+	message: errors
+      };
+    });
 };
