@@ -7,8 +7,6 @@ module.exports = async function(input, language, beam) {
     language: language,
     beam: beam
   };
-  let res = await axios.get('http://localhost:5002/predict', { params: params })
-        .catch((err) => { logger.error(err) });
-  logger.info(JSON.stringify(res.data))
-  return res.data;
+  return axios.get('http://localhost:5002/predict', { params: params })
+    .catch((err) => { logger.error(err) });
 };
