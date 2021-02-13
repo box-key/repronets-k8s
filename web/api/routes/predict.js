@@ -52,9 +52,15 @@ module.exports = () => {
       logger.info(`Request query = ${JSON.stringify(req.query)}`);
       let output = await predictor(input, language, beam, model);
       logger.info(`output = ${JSON.stringify(output)}`);
-      res.json(output);
+      res.json({
+	"data": output, 
+	"status": 200
+      }).status(200);
     } else {
-      res.json(errors.array()[0]).status(400);
+      res.json({
+	"message": errors.array()[0],
+	"status": 400
+      }).status(400);
     }
   });
   return router
