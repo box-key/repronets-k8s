@@ -35,7 +35,7 @@ def main():
         # write samples with row indexes
         output_path = data_path / file['write']
         logger.info("Writing a file to '{}'".format(output_path))
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f, delimiter='\t')
             for sample in samples:
                 writer.writerow(sample)
