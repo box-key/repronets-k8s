@@ -13,6 +13,7 @@ def main():
     logger.debug("data_path = '{}'".format(data_path))
     files = [
         {"read": 'wd_korean_16.f12', "write": 'wd_korean_16_indexed.f12'},
+        {"read": 'wd_korean_20.f12', "write": 'wd_korean_20_indexed.f12'},
         {"read": 'wd_korean_64.f12', "write": 'wd_korean_64_indexed.f12'}
     ]
     # iterate through files
