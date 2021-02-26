@@ -7,11 +7,8 @@ __pycache__/
 *.ipynb
 
 
-# pytorch models and vocabulary
-model_store/*/*.pt
-model_store/*/*.json
-model_store/*/*.zip
-model_store/*/*.dill
+# static model files
+model_store/
 
 
 # wheel file
@@ -20,10 +17,6 @@ model_store/*/*.dill
 
 # training and validation data
 datasets/
-
-
-# phonetisaurus models
-model_store/*_ps_*/
 
 
 # virtual env
@@ -36,7 +29,6 @@ venv/
 
 # opennmt folder
 opennmt/
-model_store/**/production_*/
 
 
 # ctranslate2 models
@@ -51,5 +43,10 @@ sensitive/
 # compiled phonetisaurus file
 *.so
 
-# nodejs files
+
+# config files
+*.yml
+
+
+# node modules
 node_modules/

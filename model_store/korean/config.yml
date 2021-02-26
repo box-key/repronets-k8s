@@ -1,6 +1,0 @@
-model_name: net-transofrmer
-model_params: {dropout: 0.2, hid_dim: 128, input_dim: 132, max_seq_len: 64, n_heads: 2,
-  n_layers: 4, output_dim: 1127, pf_dim: 64, src_pad_idx: 1, trg_pad_idx: 1}
-train_params: {batch_size: 256, checkpoint: 1, clip: 1.0, device_type: cuda, epochs: 100,
-  loss: CrossEntropyLoss, lr: 0.0005, optim: Adam, train_path: /content/drive/MyDrive/Colab_Notebooks/NETransliterate/datasets/wd_korean_64.f12,
-  val_path: /content/drive/MyDrive/Colab_Notebooks/NETransliterate/datasets/wd_korean_16.f12}
