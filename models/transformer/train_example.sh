@@ -1,1 +1,0 @@
-python models/transformer/train.py --model-dir model_store/katakana --batch-size 64 --max-seq-len 64 --n-heads 2 --n-layers 4 --dropout 0.2 --train-path datasets/wd_katakana_64.f12 --val-path datasets/wd_katakana_16.f12 --log-level info --epochs 3 --checkpoint 1 --device cpu --learning-rate 0.0005

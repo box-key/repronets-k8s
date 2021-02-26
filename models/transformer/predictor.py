@@ -1,51 +1,39 @@
-import bentoml as bento
-from bentoml.frameworks.pytorch import PytorchModelArtifact
-from bentoml.service.artifacts.common import PickleArtifact
-from bentoml.adapters import JsonInput, JsonOutput
-
-from modules.seq2seq import Seq2Seq
-from inference.factory import NETModelFactory
-from inference.transliterator import NETransliterator
-
-import torchtext
-import torch
+from flask import Flask, request
+from flask_restful import Resource, Api
 
 import logging
-import pathlib
+import math
 
 
-@bento.env(requirements_txt_file='requirements.txt')
-@bento.artifacts([
-    PytorchModelArtifact('model_ar'),
-    PytorchModelArtifact('model_ch'),
-    PytorchModelArtifact('model_he'),
-    PytorchModelArtifact('model_ja'),
-    PytorchModelArtifact('model_ko'),
-    PytorchModelArtifact('model_ru'),
-    PickleArtifact('ar_fields'),
-    PickleArtifact('ch_fields'),
-    PickleArtifact('he_fields'),
-    PickleArtifact('ja_fields'),
-    PickleArtifact('ko_fields'),
-    PickleArtifact('ru_fields'),
-    PickleArtifact('predictor'),
-])
-class BentoNETransliterator(bento.BentoService):
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    level=logging.DEBUG
+)
+logger = logging.getLogger(__name__)
 
-    device = torch.device('cpu')
+
+class TransformerNETransliterator(Resource):
+
+    def __init__(self, **kwargs):
+        self.net_models = kwargs['net_models']
 
     def format_output(self, output):
         formatted_output = {}
         for i, pred in enumerate(output, start=1):
             key = "No.{}".format(i)
-            formatted_output[key] = pred
+            tokens = "".join(pred['tokens'])
+            seq_prob = math.exp(pred['score'])
+            formatted_output[key] = {
+                "prob": round(seq_prob, 10),
+                "tokens": tokens
+            }
         return formatted_output
 
-    @bento.api(input=JsonInput(), output=JsonOutput(), batch=False)
-    def predict(self, json_obj):
-        language = json_obj.get("language", "")
-        beam_size = int(json_obj.get("beam_size", 0))
-        input_text = json_obj.get("input", "")
+    def get(self):
+        language = request.args.get("language", "")
+        beam_size = int(request.args.get("beam", 0))
+        input_text = request.args.get("input", "")
+        logger.debug("query params = '{}'".format(request.args))
         if len(input_text) == 0:
             resp = {"status": 400, "message": "input is empty"}
             return resp
@@ -56,144 +44,85 @@ class BentoNETransliterator(bento.BentoService):
                             "received = '{}'".format(beam_size))
             }
             return resp
+        if len(input_text) > 36:
+            resp = {
+                "status": 400,
+                "message": ("ILLEGAL INPUT: 'input' word must consist of "
+                            "less than 37 characters")
+            }
+            return resp
         # lower text and remove white space
         input_text = input_text.lower().replace(" ", "")
         # get model depending on language
-        if language == "arabic":
-            model = self.artifacts.model_ar
-            trg_field = self.artifacts.ar_fields["target"]
-            src_field = self.artifacts.ar_fields["source"]
-        elif language == "chinese":
-            model = self.artifacts.model_ch
-            trg_field = self.artifacts.ch_fields["target"]
-            src_field = self.artifacts.ch_fields["source"]
-        elif language == "hebrew":
-            model = self.artifacts.model_he
-            trg_field = self.artifacts.he_fields["target"]
-            src_field = self.artifacts.he_fields["source"]
-        elif language == "japanese":
-            model = self.artifacts.model_ja
-            trg_field = self.artifacts.ja_fields["target"]
-            src_field = self.artifacts.ja_fields["source"]
-        elif language == "korean":
-            model = self.artifacts.model_ko
-            trg_field = self.artifacts.ko_fields["target"]
-            src_field = self.artifacts.ko_fields["source"]
-        elif language == "russian":
-            model = self.artifacts.model_ru
-            trg_field = self.artifacts.ru_fields["target"]
-            src_field = self.artifacts.ru_fields["source"]
-        else:
+        if language not in self.net_models:
             resp = {
                 "status": 400,
                 "message": "language = '{}' is not supported".format(language)
             }
             return resp
+        else:
+            translator = self.net_models[language]
         # get prediction
-        prediction = self.artifacts.predictor(
-            named_entity=input_text,
-            max_pred_len=len(input_text) + 2,
-            beam_size=beam_size,
-            model=model,
-            src_field=src_field,
-            trg_field=trg_field,
-            device=self.device,
-            pad_idx=trg_field.pad_idx,
-            sos_idx=trg_field.sos_idx,
-            eos_idx=trg_field.eos_idx,
-            special_tokens=trg_field.special_tokens_idxs
-        )
-        print(self.format_output)
+        prediction = translator.translate_batch([list(input_text)],
+                                                beam_size=beam_size,
+                                                num_hypotheses=beam_size,
+                                                return_scores=True)
         resp = {
-            "data": self.format_output(prediction),
+            "data": self.format_output(prediction[0]),
             "status": 200,
             "message": "Successfully made predictions"
         }
         return resp
 
 
-def get_articrafts(dir_path, model_path):
-    device = torch.device('cpu')
-    factory = NETModelFactory(dir_path / 'config.yml',
-                              dir_path / 'src_field.dill',
-                              dir_path / 'trg_field.dill',
-                              Seq2Seq,
-                              device)
-    model, src, trg = factory.produce(dir_path / model_path)
-    return model, src, trg
-
-
-def format_torchtext_field(field):
-    """Add necessary attributes for inference to torchtext Field object."""
-    pad_idx = field.vocab.stoi[field.pad_token]
-    sos_idx = field.vocab.stoi[field.init_token]
-    eos_idx = field.vocab.stoi[field.eos_token]
-    special_tokens_idxs = set([pad_idx, sos_idx, eos_idx])
-    setattr(field, 'pad_idx', pad_idx)
-    setattr(field, 'sos_idx', sos_idx)
-    setattr(field, 'eos_idx', eos_idx)
-    setattr(field, 'special_tokens_idxs', special_tokens_idxs)
-    return field
-
-
-def pack_model():
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-        level=logging.DEBUG
-    )
-    logger = logging.getLogger(__name__)
+def create_app():
+    import ctranslate2
+    import pathlib
     path = pathlib.Path(__file__).absolute().parents[2] / 'model_store'
-    logger.debug("model directory path = '{}'".format(path))
-    device = torch.device('cpu')
+    logger.info("model directory path = '{}'".format(path))
     # start packing
-    bento_net = BentoNETransliterator()
+    net_models = {}
     # pack arabic model
-    model, src, trg = get_articrafts(path / 'arabic', '50.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_ar", model)
-    bento_net.pack("ar_fields", {"source": src, "target": trg})
+    model_ara = ctranslate2.Translator(
+        str(path / 'arabic' / 'ctranslate2_released')
+    )
+    net_models["ara"] = model_ara
     logger.info("packed arabic model")
     # pack chiense model
-    model, src, trg = get_articrafts(path / 'chinese', '50.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_ch", model)
-    bento_net.pack("ch_fields", {"source": src, "target": trg})
+    model_chi = ctranslate2.Translator(
+        str(path / 'chinese' / 'ctranslate2_released')
+    )
+    net_models["chi"] = model_chi
     logger.info("packed chinese model")
     # pack hebrew model
-    model, src, trg = get_articrafts(path / 'hebrew', '50.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_he", model)
-    bento_net.pack("he_fields", {"source": src, "target": trg})
+    model_heb = ctranslate2.Translator(
+        str(path / 'hebrew' / 'ctranslate2_released')
+    )
+    net_models["heb"] = model_heb
     logger.info("packed hebrew model")
     # pack japanese model
-    model, src, trg = get_articrafts(path / 'katakana', '30.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_ja", model)
-    bento_net.pack("ja_fields", {"source": src, "target": trg})
+    model_jpn = ctranslate2.Translator(
+        str(path / 'katakana' / 'ctranslate2_released')
+    )
+    net_models["jpn"] = model_jpn
     logger.info("packed japanese model")
     # pack korean model
-    model, src, trg = get_articrafts(path / 'korean', '50.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_ko", model)
-    bento_net.pack("ko_fields", {"source": src, "target": trg})
+    model_kor = ctranslate2.Translator(
+        str(path / 'korean' / 'ctranslate2_released')
+    )
+    net_models["kor"] = model_kor
     logger.info("packed korean model")
     # pack russian model
-    model, src, trg = get_articrafts(path / 'russian', '50.pt')
-    # customize target field object
-    trg = format_torchtext_field(trg)
-    bento_net.pack("model_ru", model)
-    bento_net.pack("ru_fields", {"source": src, "target": trg})
+    model_rus = ctranslate2.Translator(
+        str(path / 'russian' / 'ctranslate2_released')
+    )
+    net_models["rus"] = model_rus
     logger.info("packed russian model")
-    # pack predictor
-    bento_net.pack("predictor", NETransliterator())
-    logger.info("packed predictor")
-    bento_net.save()
-
-
-if __name__ == "__main__":
-    pack_model()
+    # init flask objects
+    app = Flask(__name__)
+    api = Api(app)
+    api.app.config['RESTFUL_JSON'] = {'ensure_ascii': False}
+    api.add_resource(TransformerNETransliterator,
+                     '/predict',
+                     resource_class_kwargs={"net_models": net_models})
+    return app
