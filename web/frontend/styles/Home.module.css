@@ -60,7 +60,15 @@
 }
 
 .thead {
-  font-size: 0.75rem;
+  font-weight: bold;
+  vertical-align: top;
+}
+
+.thead td {
+  padding: 4px;
+}
+.thead td:nth-child(1) {
+  padding-left: 0;
 }
 
 .footer {
