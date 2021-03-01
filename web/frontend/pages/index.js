@@ -2,7 +2,7 @@ import Head from 'next/head';
 import {useEffect, useState} from 'react';
 import styles from '../styles/Home.module.css';
 
-const API_URL = 'http://repronets.boxkey.me/api/predict';
+const API_URL = 'https://boxkey.me/repronets/api/predict';
 
 export default function Home() {
   const [wordToTranslate, setWordToTranslate] = useState('test');
