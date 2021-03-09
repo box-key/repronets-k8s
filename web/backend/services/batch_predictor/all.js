@@ -2,21 +2,20 @@ const axios = require('axios');
 const routes = require('../../config').routes;
 const logger = require('../../loaders/logger')(module);
 
-module.exports = async function(input, language, beam) {
-
-  params = {
-    input: input,
+module.exports = async function(batch, language, beam) {
+  data = {
+    batch: batch,
     language: language,
     beam: beam
   };
 
   const psPrediction = {
     name: 'phonetisaurus',
-    request: axios.get(routes.phonetisaurus, { params: params })
+    request: axios.post(routes.phonetisaurus, { data: data })
   };
   const tsPrediction = {
     name: 'transformer',
-    request: axios.get(routes.transformer, { params: params })
+    request: axios.post(routes.transformer, { data: data })
   };
 
   const modelNames = [

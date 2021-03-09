@@ -5,6 +5,11 @@ module.exports = {
   port: 3000,
 
   /**
+   *  timeout in millisecond
+   */
+  timeout: 300000,
+
+  /**
    *  Logging information
    */
   logs: {
@@ -12,5 +17,13 @@ module.exports = {
     format: {
       time: 'YYYY-MM-DD HH:mm:ss'
     }
+  },
+
+  /**
+   * API routes
+   */
+  routes: {
+    phonetisaurus: 'http://localhost:5001/predict',
+    transformer: 'http://localhost:5002/predict'
   }
 }

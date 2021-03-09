@@ -4,15 +4,15 @@ const phonetisaurus = require('./phonetisaurus');
 const transformer = require('./transformer');
 const all = require('./all');
 
-module.exports = async (input, language, beam, model) => {
+module.exports = async (batch, language, beam, model) => {
   let output = {};
 
   if (model == 'phonetisaurus') {
-    output = await phonetisaurus(input, language, beam);
+    output = await phonetisaurus(batch, language, beam);
   } else if (model == 'transformer') {
-    output = await transformer(input, language, beam);
+    output = await transformer(batch, language, beam);
   } else if (model == 'all') {
-    output = await all(input, language, beam);
+    output = await all(batch, language, beam);
   } else {
     logger.error(`Received undefined model = ${model}`)
     output = {

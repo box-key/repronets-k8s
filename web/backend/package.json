@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env NODE_ENV=development node ./web/app"
+    "start": "cross-env NODE_ENV=development node ./app"
   },
   "repository": {
     "type": "git",
