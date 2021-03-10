@@ -11,11 +11,11 @@ module.exports = async function(batch, language, beam) {
 
   const psPrediction = {
     name: 'phonetisaurus',
-    request: axios.post(routes.phonetisaurus, { data: data })
+    request: axios.post(routes.phonetisaurus, data)
   };
   const tsPrediction = {
     name: 'transformer',
-    request: axios.post(routes.transformer, { data: data })
+    request: axios.post(routes.transformer, data)
   };
 
   const modelNames = [

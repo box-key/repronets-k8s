@@ -10,7 +10,7 @@ module.exports = async (batch, language, beam) => {
     beam: beam
   };
 
-  return axios.post(routes.phonetisaurus, { data: data })
+  return axios.post(routes.phonetisaurus, data)
     .then((resp) => {
       logger.debug(`ps outputs = ${JSON.stringify(resp.status)}`);
       return resp.data;

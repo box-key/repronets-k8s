@@ -10,7 +10,7 @@ module.exports = async function(batch, language, beam) {
     beam: beam
   };
 
-  return axios.post(routes.transformer, { data: data })
+  return axios.post(routes.transformer, data)
     .then((resp) => {
       logger.debug(`ts outputs = ${JSON.stringify(resp.status)}`);
       return resp.data;
