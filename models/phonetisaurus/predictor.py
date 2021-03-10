@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 
+from pprint import pformat
 import logging
 import math
 
@@ -10,6 +11,9 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 logger = logging.getLogger(__name__)
+
+
+NUM_BEAM = 100
 
 
 class PhonetisaurusNETransliterator(Resource):
@@ -65,7 +69,7 @@ class PhonetisaurusNETransliterator(Resource):
             translator = self.net_models[language]
         prediction = translator.Phoneticize(word=input_text,
                                             nbest=beam_size,
-                                            beam=beam_size*20,
+                                            beam=NUM_BEAM,
                                             write_fsts=False,
                                             accumulate=False,
                                             threshold=99,
@@ -79,9 +83,13 @@ class PhonetisaurusNETransliterator(Resource):
         return resp
 
     def post(self):
-        language = request.data.get("language", "")
-        beam_size = int(request.data.get("beam", 0))
-        batch = request.data.get("batch", [])
+        data = request.get_json(force=True) 
+        language = data.get("language", "")
+        beam_size = int(data.get("beam", 0))
+        batch = data.get("batch", [])
+        logger.debug("lan={} - beam={} - batch_len={}".format(
+            language, beam_size, len(batch)
+        ))
         if beam_size <= 0:
             resp = {
                 "status": 400,
@@ -107,13 +115,14 @@ class PhonetisaurusNETransliterator(Resource):
         num_bad_samples = 0
         for sample in batch:
             source = sample['src']
+            source = source.lower().replace(" ", "")
             if (len(source) == 0) or (len(source) > 37):
                 num_bad_samples += 1
                 output = "ILLEGAL input"
             else:
                 prediction = translator.Phoneticize(word=source,
                                                     nbest=beam_size,
-                                                    beam=beam_size*20,
+                                                    beam=NUM_BEAM,
                                                     write_fsts=False,
                                                     accumulate=False,
                                                     threshold=99,
