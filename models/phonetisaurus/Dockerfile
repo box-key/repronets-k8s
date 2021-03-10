@@ -1,5 +1,9 @@
 FROM python:3.7-slim-buster
 
+ENV VERSION = 1
+ENV PATCHLEVEL = 0
+ENV SUBLEVEL = 0
+
 WORKDIR /phonetisaurus
 
 # copy trained models
