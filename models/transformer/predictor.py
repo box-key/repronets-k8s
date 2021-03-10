@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 
+from pprint import pformat
 import logging
 import math
 
@@ -75,9 +76,13 @@ class TransformerNETransliterator(Resource):
         return resp
 
     def post(self):
-        language = request.data.get("language", "")
-        beam_size = int(request.data.get("beam", 0))
-        batch = request.data.get("batch", [])
+        data = request.get_json(force=True)
+        language = data.get("language", "")
+        beam_size = int(data.get("beam", 0))
+        batch = data.get("batch", [])
+        logger.debug("lan={} - beam={} - batch_len={}".format(
+            language, beam_size, len(batch)
+        ))
         if beam_size <= 0:
             resp = {
                 "status": 400,
@@ -100,8 +105,11 @@ class TransformerNETransliterator(Resource):
         else:
             translator = self.net_models[language]
         # TODO: compare the throughput of single prediction vs batch prediction
+        results = []
+        num_bad_samples = 0
         for sample in batch:
             source = sample['src']
+            source = source.lower().replace(" ", "")
             if (len(source) == 0) or (len(source) > 37):
                 num_bad_samples += 1
                 output = "ILLEGAL input"
