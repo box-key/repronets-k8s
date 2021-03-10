@@ -91,9 +91,9 @@ module.exports = () => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
       let batch = req.body.batch;
-      let language = req.query.language;
-      let model = req.query.model;
-      let beam = req.query.beam;
+      let language = req.body.language;
+      let model = req.body.model;
+      let beam = req.body.beam;
       logger.info(`Request body: language=${language} - model=${model} - beam=${beam} - batch len = ${batch.length}`);
       let output = await batch_predictor(batch, language, beam, model);
       logger.info(`output = ${JSON.stringify(output)}`);
