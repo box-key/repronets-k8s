@@ -1,0 +1,53 @@
+# cache
+__pycache__/
+
+
+# ipython
+.ipynb_checkpoints/
+*.ipynb
+
+
+# static model files
+model_store/
+
+
+# wheel file
+*.whl
+
+
+# training and validation data
+datasets/
+
+
+# virtual env
+venv/
+
+
+# socket
+*.sock
+
+
+# opennmt folder
+opennmt/
+
+
+# ctranslate2 models
+ctranslate2_released/
+*.zip
+
+
+# sensitive files
+*_sensitive*
+sensitive/
+
+
+# compiled phonetisaurus file
+*.so
+
+
+# config files
+*.yml
+
+
+# node modules
+node_modules/

@@ -1,0 +1,8 @@
+.git
+*.zip
+*.dill
+*.pt
+docs/
+.gitignore
+README.md
+__pycache__
