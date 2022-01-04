@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: repronet-phs-ara
+spec:
+  template:
+    spec:
+      containers:
+        - name: repronet-phs-ara
+          image: dev.local/repronet-phs-ara
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000

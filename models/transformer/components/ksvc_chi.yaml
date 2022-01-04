@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: repronet-trf-chi
+spec:
+  template:
+    spec:
+      containers:
+        - name: repronet-trf-chi
+          image: dev.local/repronet-trf-chi
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
