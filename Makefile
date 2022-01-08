@@ -49,3 +49,6 @@ deploy-trf:
 check:
 	kubectl -n repronets get ksvc
 	kubectl -n repronets get po
+
+run-test-pod:
+	kubectl run --rm -it test --image=praqma/network-multitool bash
