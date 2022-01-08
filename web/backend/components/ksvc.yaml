@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: repronet-backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: repronet-backend
+          image: dev.local/repronet-backend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
