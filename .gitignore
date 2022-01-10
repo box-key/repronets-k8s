@@ -51,3 +51,7 @@ sensitive/
 
 # node modules
 node_modules/
+
+
+# no-commit
+*-no-commit*
