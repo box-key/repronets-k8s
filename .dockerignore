@@ -1,3 +1,4 @@
+# build context for `models/`
 .git
 *.zip
 *.dill
@@ -5,4 +6,5 @@
 docs/
 .gitignore
 README.md
+web/
 __pycache__
