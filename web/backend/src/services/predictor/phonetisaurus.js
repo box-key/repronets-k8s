@@ -10,7 +10,7 @@ module.exports = async (input, language, beam) => {
   };
 
   let hostHeader = {
-    Host: `repronet-phs-${language}.repronets.example.com`
+    Host: `repronet-phs-${language}.repronets.10.103.195.76.sslip.io`
   };
 
   return axios.get(routes.phonetisaurus, { params: params, headers: hostHeader })

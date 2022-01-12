@@ -10,7 +10,7 @@ module.exports = async function(input, language, beam) {
   };
 
   let hostHeader = {
-    Host: `repronet-trf-${language}.repronets.example.com`
+    Host: `repronet-trf-${language}.repronets.10.103.195.76.sslip.io`
   };
 
   return axios.get(routes.transformer, { params: params, headers: hostHeader })

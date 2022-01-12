@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: repronet-backend
-          image: dev.local/repronet-backend
+          image: dev.local/repronet-backend:beta-2
           imagePullPolicy: Never
           ports:
             - containerPort: 3000

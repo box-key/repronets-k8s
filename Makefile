@@ -2,17 +2,23 @@
 
 test-trf:
 	@for i in ara chi heb jpn kor rus; do \
-		curl --request GET -H "Host: repronet-trf-$$i.repronets.example.com" --url 'http://192.168.49.2:31388/predict?input=rocky&beam=3';\
+		curl --request GET -H "Host: repronet-trf-$$i.repronets.10.103.195.76.sslip.io" --url 'http://192.168.49.2:31388/predict?input=rocky&beam=3';\
 		echo "";\
 	done
 
 test-phs:
 	@for i in ara chi heb jpn kor rus; do \
-		curl --request GET -H "Host: repronet-phs-$$i.repronets.example.com" --url 'http://192.168.49.2:31388/predict?input=rocky&beam=3';\
+		curl --request GET -H "Host: repronet-phs-$$i.repronets.10.103.195.76.sslip.io" --url 'http://192.168.49.2:31388/predict?input=rocky&beam=3';\
 		echo "";\
 	done
 
-test-all: test-trf test-phs
+test-backend:
+	curl --request GET -H "Host: repronet-backend.repronets.10.103.195.76.sslip.io" --url 'http://192.168.49.2:31388/predict?language=jpn&input=rocky&beam=3&model=phs'
+	@echo ""
+	curl --request GET -H "Host: repronet-backend.repronets.10.103.195.76.sslip.io" --url 'http://192.168.49.2:31388/predict?input=rocky&language=kor&beam=3&model=transformer'
+	@echo ""
+
+test-all: test-trf test-phs test-backend
 
 build-phs:
 	@for i in ara chi heb jpn kor rus; do \

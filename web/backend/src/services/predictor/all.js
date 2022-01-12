@@ -10,11 +10,11 @@ module.exports = async function(input, language, beam) {
   };
 
   let hostHeaderPhs = {
-    Host: `repronet-phs-${language}.repronets.example.com`
+    Host: `repronet-phs-${language}.repronets.10.103.195.76.sslip.io`
   };
 
   let hostHeaderTrf = {
-    Host: `repronet-trf-${language}.repronets.example.com`
+    Host: `repronet-trf-${language}.repronets.10.103.195.76.sslip.io`
   };
 
   const psPrediction = {
