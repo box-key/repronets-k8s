@@ -1,4 +1,4 @@
-# Reproducible Named Entity Transliteration Models
+# Reproducible Named Entity Transliteration models (ReproNETs)
 
 `repronets-k8s` is a hub for named entity transliteration (NET) models. 
 It hosts trained NET models and provides simple interface to make them accesssible. All models run as serverless services on [Knative](https://knative.dev/docs/). Our platform is highly scalable and economical thanks to Knative's `autoscaling (even to zero)` feature
