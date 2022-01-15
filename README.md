@@ -44,8 +44,7 @@ This is mainly used for a real-time prediction.
 
 ``` bash
 curl --request GET   \
-  --url 'https://boxkey.me/repronets/api/v1/predict?input=rocky&language=jpn&beam=2&model=all' \
-  --insecure
+  --url 'https://www.boxkey.me/repronets/api/v1/predict?input=rocky&language=jpn&beam=2&model=all' 
 ```
 
 #### Response
