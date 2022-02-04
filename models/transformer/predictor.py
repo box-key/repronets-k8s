@@ -20,11 +20,20 @@ class TransformerNETransliterator(Resource):
 
     def format_output(self, output):
         formatted_output = {}
+        probs = []
         for i, pred in enumerate(output, start=1):
             key = "No.{}".format(i)
             tokens = "".join(pred["tokens"])
-            seq_prob = math.exp(pred["score"])
-            formatted_output[key] = {"prob": round(seq_prob, 10), "tokens": tokens}
+            # weight is the log probability
+            probs.append(math.exp(pred["score"]))
+            formatted_output[key] = {"tokens": tokens}
+        # convert weights to probability distribution
+        denom = sum(probs)
+        for prob, key in zip(probs, formatted_output.keys()):
+            if denom > 0:
+                formatted_output[key]["prob"] = round(prob / denom, 4)
+            else:
+                formatted_output[key]["prob"] = 0
         return formatted_output
 
     def get(self):
