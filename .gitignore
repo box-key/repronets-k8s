@@ -55,3 +55,8 @@ node_modules/
 
 # no-commit
 *-no-commit*
+
+
+# misc.
+data/
+nohup.out
