@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: repronet-phs-chi
-          image: dev.local/repronet-phs-chi
+          image: dev.local/repronet-phs-chi:v1.1.0
           imagePullPolicy: Never
           ports:
             - containerPort: 5000

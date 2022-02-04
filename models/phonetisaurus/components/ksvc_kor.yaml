@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: repronet-phs-kor
-          image: dev.local/repronet-phs-kor
+          image: dev.local/repronet-phs-kor:v1.1.0
           imagePullPolicy: Never
           ports:
             - containerPort: 5000

@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: repronet-phs-rus
-          image: dev.local/repronet-phs-rus
+          image: dev.local/repronet-phs-rus:v1.1.0
           imagePullPolicy: Never
           ports:
             - containerPort: 5000

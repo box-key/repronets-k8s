@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: repronet-trf-heb
-          image: dev.local/repronet-trf-heb
+          image: dev.local/repronet-trf-heb:v1.1.0
           imagePullPolicy: Never
           ports:
             - containerPort: 5000
