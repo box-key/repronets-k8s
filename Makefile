@@ -23,19 +23,19 @@ test-all: test-trf test-phs test-backend
 
 build-phs:
 	@for i in ara chi heb jpn kor rus; do \
-		echo "Building $i";\
+		echo "Building $$i";\
 		docker build\
-		-t dev.local/repronet-phs-$i\
+		-t dev.local/repronet-phs-$$i:$(tag)\
 		-f models/phonetisaurus/Dockerfile\
-		--build-arg LANGUAGE=$i\
-		. ;
+		--build-arg LANGUAGE=$$i\
+		. ;\
 	done
 
 build-trf:
 	@for i in ara chi heb jpn kor rus; do \
 		echo "Building $$i";\
 		docker build\
-		-t dev.local/repronet-trf-$$i\
+		-t dev.local/repronet-trf-$$i:$(tag)\
 		-f models/transformer/Dockerfile\
 		--build-arg LANGUAGE=$$i\
 		. ;\
