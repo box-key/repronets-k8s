@@ -1,7 +1,7 @@
-# Reproducible Named Entity Transliteration Models
+# Reproducible Named Entity Transliteration models (ReproNETs)
 
 `repronets-k8s` is a hub for named entity transliteration (NET) models. 
-It hosts trained NET models and provides simple interfaces to make them accesssible. All models run as serverless services on [Knative](https://knative.dev/docs/). Our platform is highly scalable and economical thanks to Knative's `autoscaling (even to zero)` feature
+It hosts trained NET models and provides simple interface to make them accesssible. All models run as serverless services on [Knative](https://knative.dev/docs/). Our platform is highly scalable and economical thanks to Knative's `autoscaling (even to zero)` feature
 
 Available models:
 * [Phonetisaurus](https://github.com/AdolfVonKleist/Phonetisaurus) 
@@ -27,7 +27,7 @@ GUI provides a tool to easily and visually compare outputs across the `Transform
 
 Link: https://boxkey.me
 
-## API
+## Web API
 
 ReproNETs provide a public API that provides transliteration as a service via simple HTTP request. 
 
@@ -37,18 +37,17 @@ The query parameters are:
 * beam: The size of beam search. It must be an integer from 1 to 5.
 * model: The name of a transliteration model. It must be either `phonetisaurus`, `transformer` or `all`.
 
-## GET
+### GET
 This is mainly used for a real-time prediction.
 
-### Request
+#### Request
 
 ``` bash
 curl --request GET   \
-  --url 'https://boxkey.me/repronets/api/v1/predict?input=rocky&language=jpn&beam=2&model=all' \
-  --insecure
+  --url 'https://www.boxkey.me/repronets/api/v1/predict?input=rocky&language=jpn&beam=2&model=all' 
 ```
 
-### Response
+#### Response
 
 ```javascript
 {
