@@ -1,4 +1,5 @@
 # Mainly utility targets
+.PHONY: test-trf test-phs test-all build-phs build-trf deploy-phs deploy-trf check run-test-pod
 
 test-trf:
 	@for i in ara chi heb jpn kor rus; do \
