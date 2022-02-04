@@ -1,4 +1,4 @@
-.PHONY: test-trf test-phs test-all build-phs build-trf deploy-phs deploy-trf check
+# Mainly utility targets
 
 test-trf:
 	@for i in ara chi heb jpn kor rus; do \
