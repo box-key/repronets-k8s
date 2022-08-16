@@ -1,3 +1,4 @@
+# python 3.8.10 is required for torch==1.6.0
 FROM python:3.8.10-slim-buster
 
 ENV VERSION = 1
