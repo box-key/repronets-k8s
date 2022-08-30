@@ -1,0 +1,19 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: cyzil-trf-kor
+spec:
+  template:
+    spec:
+      containers:
+        - name: cyzil-trf-kor
+          image: boxkey/transformer:v1.0.2
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MLFLOW_MODEL_NAME
+              value: "Transformer_Kor"
+            - name: MLFLOW_MODEL_VERSION
+              value: "1"
+      imagePullSecrets:
+        - name: myhubcred
